@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_whitelist_types">
+        <item>None</item>
+        <item>Simple Text</item>
+        <item>Basic</item>
+        <item>Basic w/ Images</item>
+        <item>Relaxed</item>
+    </string-array>
+    <string-array name="pref_whitelist_type_values">
+        <item>none</item>
+        <item>simple-text</item>
+        <item>basic</item>
+        <item>basic-with-images</item>
+        <item>relaxed</item>
+    </string-array>
+</resources>

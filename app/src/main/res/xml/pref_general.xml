@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue="@string/pref_default_home_page"
+        android:inputType="textCapWords"
+        android:key="@string/pref_key_home_page"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_home_page"
+        android:summary="@string/pref_description_home_page"/>
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/pref_key_allow_javascript"
+        android:summary="@string/pref_description_allow_javascript"
+        android:summaryOn="@string/pref_description_allow_javascript_true"
+        android:summaryOff="@string/pref_description_allow_javascript_false"
+        android:title="@string/pref_title_allow_javascript" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/pref_key_force_https"
+        android:summary="@string/pref_description_force_https"
+        android:summaryOn="@string/pref_description_force_https_true"
+        android:summaryOff="@string/pref_description_force_https_false"
+        android:title="@string/pref_title_force_https" />
+</PreferenceScreen>

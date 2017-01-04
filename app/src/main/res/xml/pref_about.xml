@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="@string/pref_key_version_name"
+        android:title="@string/text_version_name"/>
+    <Preference
+        android:key="@string/pref_key_version_code"
+        android:title="@string/text_version_code"/>
+    <Preference
+        android:key="@string/pref_key_license"
+        android:title="@string/text_license_information"
+        android:summary="@string/pref_description_license" />
+</PreferenceScreen>
