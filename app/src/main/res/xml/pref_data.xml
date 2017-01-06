@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/pref_key_remember_history"
+        android:summary="@string/pref_summary_remember_history"
+        android:summaryOn="@string/pref_summary_remember_history_on"
+        android:summaryOff="@string/pref_summary_remember_history_off"
+        android:title="@string/pref_title_remember_history" />
 </PreferenceScreen>

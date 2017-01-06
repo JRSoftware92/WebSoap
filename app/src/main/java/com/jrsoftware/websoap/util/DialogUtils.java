@@ -6,7 +6,7 @@ import android.content.res.Resources;
 import android.support.v7.app.AlertDialog;
 import android.widget.EditText;
 
-import com.suite.R;
+import com.jrsoftware.websoap.R;
 
 /**
  * Created by jriley on 2/20/16.
@@ -117,5 +117,26 @@ public class DialogUtils {
         dialog.setPositiveButton(context.getString(R.string.text_cancel), cancelListener);
 
         return dialog.create();
+    }
+
+    public static AlertDialog showConfirmationDialog(Context context, DialogInterface.OnClickListener okListener){
+        return getConfirmationDialog(context, R.string.title_dialog_confirmation,
+                R.string.message_dialog_cannot_be_undone,
+                okListener);
+    }
+
+    public static AlertDialog getConfirmationDialog(Context context, int titleId, int messageId,
+                                                DialogInterface.OnClickListener okListener){
+        AlertDialog dialog = DialogUtils.getMessageDialog(
+                context, titleId, messageId, okListener,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }
+        );
+
+        return dialog;
     }
 }

@@ -3,27 +3,47 @@ package com.jrsoftware.websoap.activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.media.audiofx.BassBoost;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 
 import com.jrsoftware.websoap.R;
+import com.jrsoftware.websoap.controller.AppDataCenter;
+import com.jrsoftware.websoap.model.SiteEntry;
+import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.services.HTMLSanitizationService;
 import com.jrsoftware.websoap.settings.SettingsActivity;
 import com.jrsoftware.websoap.util.AppUtils;
+import com.jrsoftware.websoap.util.DialogUtils;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+/**
+ * Main Entrypoint for the application
+ *
+ * FIXME - History won't serialize properly
+ */
 public class MainActivity extends AppCompatActivity {
 
+    public static final String ARG_SITE = "com.jrsoftware.websoap.site";
+    public static final String ARG_BOOKMARKS = "com.jrsoftware.websoap.bookmarks";
+    public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
+
+    private static final String LOG_TAG = "MAIN-ACTIVITY";
     private LocalBroadcastManager broadcastManager;
 
     private ProgressDialog loadingDialog;
@@ -31,14 +51,14 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private SearchView searchView;
 
-    private String currentUrl;
+    private AppDataCenter dataCenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
-        //fragmentManager = getSupportFragmentManager();
         broadcastManager = LocalBroadcastManager.getInstance(this);
+        dataCenter = new AppDataCenter(this);
 
         //Registers the Broadcast Receiver for the Search Service
         IntentFilter filter = new IntentFilter();
@@ -58,14 +78,59 @@ public class MainActivity extends AppCompatActivity {
         loadingDialog.setMessage("Loading Requested Page\u2026");
         loadingDialog.setCancelable(false);
 
+        //Load Bookmarks and history if Requested
+        Intent intent = getIntent();
+        boolean loadBookmarks = true, loadHistory = true;
+        SiteEntry site = null;
+        if(intent != null){
+            Bundle extras = intent.getExtras();
+            if(extras != null){
+                site = intent.getParcelableExtra(ARG_SITE);
+                if(intent.hasExtra(ARG_BOOKMARKS)){
+                    SiteList bookmarks = intent.getParcelableExtra(ARG_BOOKMARKS);
+                    dataCenter.setBookmarks(bookmarks);
+                    loadBookmarks = false;
+
+                    trySaveBookmarks();
+                }
+                if(intent.hasExtra(ARG_HISTORY)){
+                    SiteList history = intent.getParcelableExtra(ARG_HISTORY);
+                    dataCenter.setSiteHistory(history);
+                    loadHistory = false;
+
+                    trySaveWebHistory();
+                }
+            }
+        }
+
+        //Load Serialized Bookmarks if necessary
+        if(loadBookmarks)
+            tryLoadBookmarks();
+
+        //Load Web History if necessary
+        if(loadHistory)
+            tryLoadWebHistory();
+
+        //Load Site if requested
+        if(site != null){
+            sendSearchRequest(site.url(), site.title(), true);
+            return;
+        }
+
         //Load Homepage
         SharedPreferences preferences = AppUtils.getPreferences(this);
         String homePage = preferences.getString(
                 getString(R.string.pref_key_home_page),
                 getString(R.string.pref_default_home_page)
         );
-        searchView.setQuery(homePage, false);
-        sendSearchRequest(homePage);
+        sendSearchRequest(homePage, "Home", true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        trySaveBookmarks();
+        trySaveWebHistory();
+        super.onDestroy();
     }
 
     @Override
@@ -78,13 +143,51 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         // Handle item selection
+        SiteEntry entry;
+        Intent intent;
         switch (item.getItemId()) {
+            case R.id.action_back:
+                entry = dataCenter.previousSite();
+                sendSearchRequest(entry.url(), entry.title(), false);
+                return true;
+            case R.id.action_forward:
+                entry = dataCenter.nextSite();
+                sendSearchRequest(entry.url(), entry.title(), false);
+                return true;
             case R.id.action_refresh:
-                sendSearchRequest(currentUrl);
+                entry = dataCenter.getLastRequestedSite();
+                sendSearchRequest(entry.url(), entry.title(), false);
+                return true;
+            case R.id.action_home:
+                //Load Homepage
+                SharedPreferences preferences = AppUtils.getPreferences(this);
+                String homePage = preferences.getString(
+                        getString(R.string.pref_key_home_page),
+                        getString(R.string.pref_default_home_page)
+                );
+                sendSearchRequest(homePage, "Home", true);
+                return true;
+            case R.id.action_bookmark:
+                entry = dataCenter.getLastRequestedSite();
+                showNewBookmarkDialog(entry);
+                return true;
+            case R.id.action_bookmarks:
+                SiteList bookmarks = dataCenter.getBookmarks();
+                intent = new Intent(this, BookmarkListActivity.class);
+                intent.putParcelableArrayListExtra(BookmarkListActivity.ARG_BOOKMARKS, bookmarks);
+
+                startActivity(intent);
+                return true;
+            case R.id.action_history:
+                SiteList history = dataCenter.getSiteHistory();
+                intent = new Intent(this, WebHistoryActivity.class);
+                intent.putParcelableArrayListExtra(WebHistoryActivity.ARG_HISTORY, history);
+
+                startActivity(intent);
                 return true;
             case R.id.action_settings:
-                Intent i = new Intent(this, SettingsActivity.class);
-                startActivity(i);
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 //pass the event to parent
@@ -92,12 +195,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showNewBookmarkDialog(final SiteEntry entry) {
+        final EditText editText = new EditText(this);
+        final Context context = this;
+        editText.setHint(R.string.hint_new_bookmark_title);
+        AlertDialog dialog = DialogUtils.getTextInputDialog(
+                this, R.string.title_new_bookmark, editText, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Editable editable = editText.getText();
+                        if(editable != null && editable.length() > 0){
+                            String title = editable.toString();
+                            dataCenter.addBookmark(entry.url(), title);
+                            trySaveBookmarks();
+
+                            AppUtils.showToastShort(context, "Bookmark Created!");
+                        }
+                        else{
+                            AppUtils.showToastShort(context, "Please enter a name for your bookmark.");
+                        }
+                    }
+                }
+        );
+
+        dialog.show();
+    }
+
     /**
      * Submits an html request to the HTML Sanitization Service
      * @param url - String url to be loaded
+     *
+     * TODO - Refactor logic to account for page titles
+     * TODO - If Invalid Query --> Handle as Google Search Request (or user specified search engine)
      */
-    protected void sendSearchRequest(String url){
-        Log.d("MainActivity", "sendSearchRequest");
+    protected void sendSearchRequest(String url, String title, boolean eraseForwardStack){
         //Validates Search Request
         if(url == null || url.length() < 1)
             return;
@@ -111,24 +242,21 @@ public class MainActivity extends AppCompatActivity {
                 url = AppUtils.HTTPS + url;
             else
                 url = AppUtils.HTTP + url;
-
-            searchView.setQuery(url, false);
         }
 
-        Log.d("MainActivity", String.format("URL: %s", url));
-        //Saves the url for refresh
-        currentUrl = url;
+        searchView.setQuery(url, false);
+        //Saves the url in the history manager
+        if(!url.equals(dataCenter.getLastRequestedURL()));
+            dataCenter.setCurrentSite(url, title, eraseForwardStack);
 
         //Display Loading Dialog while search results are being sent
         loadingDialog.show();
 
         //Sends the Search Intent to the HTMLSanitizationService
-        Log.d("MainActivity", "Sending Search Intent");
         HTMLSanitizationService.startActionSearch(this, url);
     }
 
     private void displayHTML(String html) {
-        Log.d("MainActivity", "displayHTML");
         if(html == null || html.length() < 1)
             return;
 
@@ -140,8 +268,60 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.pref_key_allow_javascript), false
         );
         webView.getSettings().setJavaScriptEnabled(enableJavascript);
-
         webView.loadDataWithBaseURL("", html, "text/html", "UTF-8", "");
+    }
+
+    private void trySaveBookmarks(){
+        try {
+            dataCenter.saveBookmarks();
+        }
+        catch(IOException io){
+            Log.e(LOG_TAG, "Unexpected Exception has occurred while saving Bookmarks File.");
+        }
+    }
+
+    private void trySaveWebHistory(){
+        try {
+            SharedPreferences pref = AppUtils.getPreferences(this);
+            boolean rememberHistory = pref.getBoolean(getString(R.string.pref_key_remember_history), true);
+            if(rememberHistory)
+                dataCenter.saveHistory();
+        }
+        catch(IOException io){
+            Log.e(LOG_TAG, "Unexpected Exception has occurred while saving History File.");
+        }
+    }
+
+    private void tryLoadBookmarks(){
+        try{
+            dataCenter.loadBookmarks();
+        }
+        catch(FileNotFoundException fnfe){
+            Log.w(LOG_TAG, "Bookmarks File not located.");
+        }
+        catch(ClassNotFoundException cnfe){
+            Log.e(LOG_TAG, "Unable to load SiteList");
+            Log.e(LOG_TAG, cnfe.getMessage());
+        }
+        catch(IOException io){
+            Log.e(LOG_TAG, "Unexpected Exception has occurred while loading Bookmarks File.");
+        }
+    }
+
+    private void tryLoadWebHistory(){
+        try{
+            dataCenter.loadHistory();
+        }
+        catch(FileNotFoundException fnfe){
+            Log.w(LOG_TAG, "History File not located.");
+        }
+        catch(ClassNotFoundException cnfe){
+            Log.e(LOG_TAG, "Unable to load SiteList");
+            Log.e(LOG_TAG, cnfe.getMessage());
+        }
+        catch(IOException io){
+            Log.e(LOG_TAG, "Unexpected Exception has occurred while loading History File.");
+        }
     }
 
     /**
@@ -151,20 +331,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(HTMLSanitizationService.BROADCAST_RESULTS)) {
-                int resultCode = intent.getIntExtra(HTMLSanitizationService.RESULT_CODE,
+                Bundle resultBundle = intent.getBundleExtra(HTMLSanitizationService.RESULT_BUNDLE);
+                int resultCode = resultBundle.getInt(HTMLSanitizationService.RESULT_CODE,
                         HTMLSanitizationService.EVENT_RESPONSE_EXCEPTION);
+                String html = resultBundle.getString(HTMLSanitizationService.RESULT_SANITIZED);
 
                 //Check the result code to determine how to handle the intent
                 switch(resultCode){
                     case HTMLSanitizationService.EVENT_REQUEST_SUCCESSFUL:
-                        Bundle extras = intent.getExtras();
-                        String html = extras.getString(HTMLSanitizationService.RESULT_SANITIZED);
-
-                        //Dismiss loading dialog and display images
-                        loadingDialog.dismiss();
-                        displayHTML(html);
+                        //Leave it alone
                         break;
-                    case HTMLSanitizationService.EVENT_REQUEST_FAILED:
+                    case HTMLSanitizationService.EVENT_RESPONSE_BAD:
                         AppUtils.showToastLong(context, "Request Failed.");
                         break;
                     case HTMLSanitizationService.EVENT_NETWORK_UNAVAILABLE:
@@ -178,6 +355,11 @@ public class MainActivity extends AppCompatActivity {
                         AppUtils.showToastLong(context, "Error has occurred with response.");
                         break;
                 }
+
+                //Display Sanitized HTML
+                displayHTML(html);
+                //Dismiss loading dialog
+                loadingDialog.dismiss();
             }
         }
     };
@@ -185,8 +367,7 @@ public class MainActivity extends AppCompatActivity {
     private WebViewClient webViewClient = new WebViewClient() {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            searchView.setQuery(url, false);
-            sendSearchRequest(url);
+            sendSearchRequest(url, url, true);
             return true;
         }
     };
@@ -199,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onQueryTextSubmit(String query) {
-            sendSearchRequest(query);
+            sendSearchRequest(query, query, true);
             return true;
         }
     };

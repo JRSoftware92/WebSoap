@@ -14,6 +14,8 @@ import com.jrsoftware.websoap.model.SiteList;
 /**
  * Created by jriley on 1/26/16.
  * ListView adapter for Site Entries
+ *
+ * TODO - Concat Strings with ellipsis if url length exceeds character limit
  */
 public class SiteListAdapter extends ArrayAdapter<SiteEntry> {
 

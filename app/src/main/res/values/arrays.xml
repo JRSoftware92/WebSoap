@@ -14,4 +14,7 @@
         <item>basic-with-images</item>
         <item>relaxed</item>
     </string-array>
+    <string-array name="array_bookmark_options">
+        <item>Delete Bookmark</item>
+    </string-array>
 </resources>

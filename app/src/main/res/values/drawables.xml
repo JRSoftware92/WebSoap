@@ -1,0 +1,11 @@
+<resources>
+    <item name="ic_back" type="drawable">@drawable/ic_chevron_left_white_24dp</item>
+    <item name="ic_forward" type="drawable">@drawable/ic_chevron_right_white_24dp</item>
+    <item name="ic_home" type="drawable">@drawable/ic_home_white_24dp</item>
+    <item name="ic_favorite" type="drawable">@drawable/ic_favorite_border_white_24dp</item>
+    <item name="ic_settings" type="drawable">@drawable/ic_settings_white_24dp</item>
+    <item name="ic_history" type="drawable">@drawable/ic_history_white_24dp</item>
+    <item name="ic_data" type="drawable">@drawable/ic_sd_storage_white_24dp</item>
+    <item name="ic_network" type="drawable">@drawable/ic_wifi_white_24dp</item>
+    <item name="ic_info" type="drawable">@drawable/ic_info_outline_white_24dp</item>
+</resources>

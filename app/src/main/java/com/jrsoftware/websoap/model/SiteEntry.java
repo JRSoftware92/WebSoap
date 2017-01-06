@@ -3,13 +3,15 @@ package com.jrsoftware.websoap.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Created by jriley on 1/4/17.
  *
- * Model class for a browser bookmark
+ * Parcelable model class for a site entry
  */
 
-public class SiteEntry implements Parcelable {
+public class SiteEntry implements Parcelable, Serializable {
 
     private String title, url;
 

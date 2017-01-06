@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">WebSoap</string>
-    <string name="pref_header_general">General</string>
-    <string name="pref_header_whitelist">Whitelist</string>
-    <string name="pref_header_privacy">Privacy</string>
+    <string name="file_history">history.bin</string>
+    <string name="file_bookmarks">bookmarks.bin</string>
+    <string name="pref_header_general">General Settings</string>
+    <string name="pref_header_whitelist">Site Settings</string>
+    <string name="pref_header_privacy">Privacy Settings</string>
     <string name="pref_header_accessibility">Accessibility</string>
     <string name="title_about">About</string>
     <string name="pref_key_allow_javascript">com.jrsoftware.websoap.allowJavascript</string>
@@ -34,4 +36,70 @@
     <string name="pref_description_license">Licensing information related to this application</string>
     <string name="path_license_information">file:///android_asset/licenses/license_information.html</string>
     <string name="text_ok">Ok</string>
+    <string name="action_forward">Forward</string>
+    <string name="action_home">Home</string>
+    <string name="action_bookmark">Bookmark</string>
+    <string name="action_bookmarks">Bookmarks</string>
+    <string name="text_cancel">Cancel</string>
+    <string name="title_new_bookmark">New Bookmark</string>
+    <string name="hint_new_bookmark_title">Enter a title for your bookmark</string>
+    <string name="text_title">Title</string>
+    <string name="text_url">Url</string>
+    <string name="title_dialog_confirmation">Are you sure?</string>
+    <string name="message_dialog_cannot_be_undone">The action you are about to perform cannot be undone. Are you sure that you would like to continue?</string>
+    <string name="text_bookmark">Bookmark</string>
+    <string name="action_history">History</string>
+
+    <!-- String Values Retrieved from - https://www.tutorialspoint.com/http/http_status_codes.htm -->
+    <string name="http_response_100">Only a part of the request has been received by the server, but as long as it has not been rejected, the client should continue with the request.</string>
+    <string name="http_response_101">The server switches protocol.</string>
+
+    <string name="http_response_200">The request is OK.</string>
+    <string name="http_response_201">The request is complete, and a new resource is created .</string>
+    <string name="http_response_202">The request is accepted for processing, but the processing is not complete.</string>
+    <string name="http_response_203">The information in the entity header is from a local or third-party copy, not from the original server.</string>
+    <string name="http_response_204">A status code and a header are given in the response, but there is no entity-body in the reply.</string>
+    <string name="http_response_205">The browser should clear the form used for this transaction for additional input.</string>
+    <string name="http_response_206">The server is returning partial data of the size requested. Used in response to a request specifying a Range header. The server must specify the range included in the response with the Content-Range header.</string>
+
+    <string name="http_response_300">A link list. The user can select a link and go to that location. Maximum five addresses.</string>
+    <string name="http_response_301">The requested page has moved to a new url.</string>
+    <string name="http_response_302">The requested page has moved temporarily to a new url.</string>
+    <string name="http_response_303">The requested page can be found under a different url.</string>
+    <string name="http_response_304">This is the response code to an If-Modified-Since or If-None-Match header, where the URL has not been modified since the specified date.</string>
+    <string name="http_response_305">The requested URL must be accessed through the proxy mentioned in the Location header.</string>
+    <string name="http_response_306">This code was used in a previous version. It is no longer used, but the code is reserved.</string>
+    <string name="http_response_307">The requested page has moved temporarily to a new url.</string>
+
+    <string name="http_response_400">The server did not understand the request.</string>
+    <string name="http_response_401">The requested page needs a username and a password.</string>
+    <string name="http_response_402">You can not use this code yet.</string>
+    <string name="http_response_403">Access is forbidden to the requested page.</string>
+    <string name="http_response_404">The server can not find the requested page.</string>
+    <string name="http_response_405">The method specified in the request is not allowed.</string>
+    <string name="http_response_406">The server can only generate a response that is not accepted by the client.</string>
+    <string name="http_response_407">You must authenticate with a proxy server before this request can be served.</string>
+    <string name="http_response_408">The request took longer than the server was prepared to wait.</string>
+    <string name="http_response_409">The request could not be completed because of a conflict.</string>
+    <string name="http_response_410">The requested page is no longer available.</string>
+    <string name="http_response_411">The "Content-Length" is not defined. The server will not accept the request without it.</string>
+    <string name="http_response_412">The pre condition given in the request evaluated to false by the server.</string>
+    <string name="http_response_413">The server will not accept the request, because the request entity is too large.</string>
+    <string name="http_response_414">The server will not accept the request, because the url is too long. Occurs when you convert a "post" request to a "get" request with a long query information.</string>
+    <string name="http_response_415">The server will not accept the request, because the mediatype is not supported.</string>
+    <string name="http_response_416">The requested byte range is not available and is out of bounds.</string>
+    <string name="http_response_417">The expectation given in an Expect request-header field could not be met by this server.</string>
+
+    <string name="http_response_500">The request was not completed. The server met an unexpected condition.</string>
+    <string name="http_response_501">The request was not completed. The server did not support the functionality required.</string>
+    <string name="http_response_502">The request was not completed. The server received an invalid response from the upstream server.</string>
+    <string name="http_response_503">The request was not completed. The server is temporarily overloading or down.</string>
+    <string name="http_response_504">The gateway has timed out.</string>
+    <string name="http_response_505">The server does not support the "http protocol" version.</string>
+    <string name="pref_header_data">Data</string>
+    <string name="pref_title_remember_history">Remember History</string>
+    <string name="pref_key_remember_history">com.jrsoftware.websoap.settings.rememberHistory</string>
+    <string name="pref_summary_remember_history">If enabled, the application will store your website history in a serialized file on your device.</string>
+    <string name="pref_summary_remember_history_on">The application is currently saving your website history in a serialized file on your device.</string>
+    <string name="pref_summary_remember_history_off">The application is not currently tracking your web history.</string>
 </resources>

@@ -3,4 +3,21 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:text="@string/text_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:id="@+id/text_title"
+        android:textStyle="normal|bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:text="@string/text_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:id="@+id/text_url"
+        android:textStyle="normal|italic"
+        android:padding="4dp" />
 </LinearLayout>

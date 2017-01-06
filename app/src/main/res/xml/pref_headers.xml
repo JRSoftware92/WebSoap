@@ -4,12 +4,19 @@
 
     <header
         android:fragment="com.jrsoftware.websoap.settings.GeneralSettingsFragment"
-        android:title="@string/pref_header_general" />
+        android:title="@string/pref_header_general"
+        android:icon="@drawable/ic_settings"/>
+    <header
+        android:fragment="com.jrsoftware.websoap.settings.DataSettingsFragment"
+        android:title="@string/pref_header_data"
+        android:icon="@drawable/ic_data"/>
     <header
         android:fragment="com.jrsoftware.websoap.settings.WhitelistSettingsFragment"
-        android:title="@string/pref_header_whitelist" />
+        android:title="@string/pref_header_whitelist"
+        android:icon="@drawable/ic_network"/>
     <header
         android:fragment="com.jrsoftware.websoap.settings.AboutSettingsFragment"
-        android:title="@string/title_about"/>
+        android:title="@string/title_about"
+        android:icon="@drawable/ic_info"/>
 
 </preference-headers>
