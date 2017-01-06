@@ -1,4 +1,4 @@
-package com.jrsoftware.websoap.controller;
+package com.jrsoftware.websoap.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
