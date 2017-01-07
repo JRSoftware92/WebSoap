@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/pref_key_allow_javascript"
+        android:summary="@string/pref_description_allow_javascript"
+        android:summaryOn="@string/pref_description_allow_javascript_true"
+        android:summaryOff="@string/pref_description_allow_javascript_false"
+        android:title="@string/pref_title_allow_javascript" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/pref_key_force_https"
+        android:summary="@string/pref_description_force_https"
+        android:summaryOn="@string/pref_description_force_https_true"
+        android:summaryOff="@string/pref_description_force_https_false"
+        android:title="@string/pref_title_force_https" />
+    <ListPreference
+        android:defaultValue="basic-html"
+        android:entries="@array/pref_whitelist_types"
+        android:entryValues="@array/pref_whitelist_type_values"
+        android:key="@string/pref_key_whitelist_type"
+        android:title="@string/pref_title_whitelist_type"
+        android:summary="@string/pref_description_whitelist_type"/>
+</PreferenceScreen>

@@ -13,7 +13,7 @@ import com.jrsoftware.websoap.R;
  * activity is showing a two-pane settings UI.
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class WhitelistSettingsFragment extends CustomPreferenceFragment {
+public class NetworkSettingsFragment extends CustomPreferenceFragment {
     private static final String LOG_TAG = "WHT-PREF-FRAGMENT";
 
     @Override
