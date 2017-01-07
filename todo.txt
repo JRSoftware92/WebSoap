@@ -1,7 +1,0 @@
-- Fix Serialized Web History
-- Add Feedback Submission
-- Add Appropriate Icons for menu items
-- Add Censorship/Swear filtering
-- Add Color Options
-    - Change Text and Background Color
-    - Add Color Blind option
