@@ -30,6 +30,7 @@ public class WebHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_history);
+        setTitle(R.string.title_web_history);
 
         final Context context = this;
 
@@ -50,10 +51,7 @@ public class WebHistoryActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SiteEntry entry = history.get(position);
-
-                Bundle output = new Bundle();
-                output.putParcelable(MainActivity.ARG_SITE, entry);
-                output.putParcelable(MainActivity.ARG_HISTORY, history);
+                Collections.reverse(history);
 
                 Intent i = new Intent(context, MainActivity.class);
                 i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
@@ -65,7 +63,7 @@ public class WebHistoryActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                openBookmarkDialog(position);
+                openHistoryDialog(position);
                 return false;
             }
         });
@@ -75,10 +73,10 @@ public class WebHistoryActivity extends AppCompatActivity {
      * Opens the options dialog for long clicking a SiteEntry object
      * @param position - index of the object in question
      */
-    void openBookmarkDialog(final int position){
+    void openHistoryDialog(final int position){
         final Context context = this;
         DialogUtils.getTextChoiceDialog(this,
-                R.array.array_bookmark_options, R.string.text_bookmark,
+                R.array.array_history_options, R.string.title_web_history,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface parentDialog, int which) {

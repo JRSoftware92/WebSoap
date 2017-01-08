@@ -14,7 +14,20 @@
         <item>basic-with-images</item>
         <item>relaxed</item>
     </string-array>
+    <string-array name="pref_search_engines">
+        <item>None</item>
+        <item>Google</item>
+        <item>Ask.com</item>
+    </string-array>
+    <string-array name="pref_search_engine_values">
+        <item>none</item>
+        <item>google</item>
+        <item>ask</item>
+    </string-array>
     <string-array name="array_bookmark_options">
         <item>Delete Bookmark</item>
+    </string-array>
+    <string-array name="array_history_options">
+        <item>Delete History</item>
     </string-array>
 </resources>

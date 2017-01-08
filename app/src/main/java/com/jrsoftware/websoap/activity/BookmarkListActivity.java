@@ -28,6 +28,7 @@ public class BookmarkListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bookmark_list);
+        setTitle(R.string.title_bookmarks);
 
         final Context context = this;
 
@@ -45,10 +46,6 @@ public class BookmarkListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SiteEntry entry = bookmarks.get(position);
-
-                Bundle output = new Bundle();
-                output.putParcelable(MainActivity.ARG_SITE, entry);
-                output.putParcelable(MainActivity.ARG_BOOKMARKS, bookmarks);
 
                 Intent i = new Intent(context, MainActivity.class);
                 i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);

@@ -11,7 +11,7 @@
         android:title="@string/pref_header_data"
         android:icon="@drawable/ic_data"/>
     <header
-        android:fragment="com.jrsoftware.websoap.settings.WhitelistSettingsFragment"
+        android:fragment="com.jrsoftware.websoap.settings.NetworkSettingsFragment"
         android:title="@string/pref_header_whitelist"
         android:icon="@drawable/ic_network"/>
     <header

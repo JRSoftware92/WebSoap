@@ -70,7 +70,7 @@ public class HTMLSanitizationService extends IntentService {
             final String action = intent.getAction();
             if (ACTION_SEARCH.equals(action)) {
                 final String url = intent.getStringExtra(ARG_URL);
-                handleActionSearch(url);
+                handleActionSearch(url, true);
             }
         }
     }
@@ -78,17 +78,33 @@ public class HTMLSanitizationService extends IntentService {
     /**
      * Handle HTML download and sanitize in the provided background thread with the provided
      * parameters.
-     *
-     * TODO - Enhance Results - Check for Error Codes
      */
-    private void handleActionSearch(String url) {
-        Log.d(SERVICE_TAG, "handleActionSearch");
+    private void handleActionSearch(String url, boolean useSearchPreference) {
+        Log.v(SERVICE_TAG, "handleActionSearch");
         final Context context = getApplicationContext();
         SharedPreferences preferences = AppUtils.getPreferences(this);
         Bundle responseBundle = new Bundle();
+        String originalRequest = url;
+        String searchEnginePref = preferences.getString(
+                getString(R.string.pref_key_search_engine),
+                "google"
+        );
+
+        boolean wasResponseGood = false;
         try {
             if(AppUtils.isNetworkAvailable(context)){
-                Log.d(SERVICE_TAG, "Network is Available. Establishing Connection\u2026");
+                //Force HTTPS if requested
+                if(!url.startsWith(AppUtils.HTTP)
+                        && !url.startsWith(AppUtils.HTTPS)
+                        && !url.startsWith(AppUtils.FTP)){
+                    boolean forceHTTPS = preferences.getBoolean(getString(R.string.pref_key_force_https), true);
+                    if(forceHTTPS)
+                        url = AppUtils.HTTPS + url;
+                    else
+                        url = AppUtils.HTTP + url;
+                }
+                Log.v(SERVICE_TAG, "Network is Available. Establishing Connection\u2026");
+                Log.v(SERVICE_TAG, String.format("URL: %s", url));
                 Connection conn = Jsoup.connect(url);
                 Connection.Response response = conn.ignoreHttpErrors(true).execute();
 
@@ -97,24 +113,23 @@ public class HTMLSanitizationService extends IntentService {
                 HTTPResponseType responseType = HTTPUtils.getResponseType(responseCode);
                 String responseDescription = HTTPUtils.getResponseDescription(context, responseCode);
 
-                Log.d(SERVICE_TAG, String.format("Response: %d", responseCode));
-                Log.d(SERVICE_TAG, String.format("Response Type: %s", responseType.name()));
-                Log.d(SERVICE_TAG, String.format("Response Message: %s", responseMsg));
+                Log.v(SERVICE_TAG, String.format("Response: %d", responseCode));
+                Log.v(SERVICE_TAG, String.format("Response Type: %s", responseType.name()));
+                Log.v(SERVICE_TAG, String.format("Response Message: %s", responseMsg));
 
                 responseBundle.putInt(RESULT_RESPONSE_CODE, responseCode);
                 responseBundle.putInt(RESULT_RESPONSE_TYPE, responseType.ordinal());
                 responseBundle.putString(RESULT_RESPONSE_MESSAGE, responseMsg);
                 if(HTTPUtils.isResponseGood(responseCode)){
-                    Log.d(SERVICE_TAG, "Connection Established. Downloading Document\u2026");
+                    Log.v(SERVICE_TAG, "Connection Established. Downloading Document\u2026");
                     Document doc = response.parse();
-                    Log.d(SERVICE_TAG, "HTML Document Download Successful! Converting to String\u2026");
+                    Log.v(SERVICE_TAG, "HTML Document Download Successful! Converting to String\u2026");
                     String html = doc.html();
                     String title = doc.title();
 
                     Log.v(SERVICE_TAG, "Conversion Successful! Cleaning via whitelist\u2026");
                     String safeHTML;
                     String whitelistType = preferences.getString(getString(R.string.pref_key_whitelist_type), "basic");
-                    Log.v(SERVICE_TAG, String.format("Whitelist Type: %s", whitelistType));
                     switch(whitelistType){
                         case "none":
                             safeHTML = Jsoup.clean(html, Whitelist.none());
@@ -136,25 +151,27 @@ public class HTMLSanitizationService extends IntentService {
                     responseBundle.putString(RESULT_SANITIZED, safeHTML);
                     responseBundle.putString(RESULT_TITLE, title);
                     responseBundle.putInt(RESULT_CODE, EVENT_REQUEST_SUCCESSFUL);
+                    wasResponseGood = true;
                 }
                 else{
-                    Log.e(SERVICE_TAG, "Bad HTTP Response Received.");
-                    responseBundle.putInt(RESULT_CODE, EVENT_RESPONSE_BAD);
-                    responseBundle.putString(
-                            RESULT_SANITIZED,
-                            getErrorHTML(
-                                    String.format(Locale.US, "%s - %d", responseType.toString(), responseCode),
-                                    String.format(
-                                            Locale.US,
-                                            "%d %s</br>%s",
-                                            responseCode,
-                                            responseMsg,
-                                            responseDescription
-                                    )
-                            )
-                    );
+                    if(searchEnginePref.equals("none")) {
+                        Log.v(SERVICE_TAG, "Forwarding Bad Response");
+                        responseBundle.putInt(RESULT_CODE, EVENT_RESPONSE_BAD);
+                        responseBundle.putString(
+                                RESULT_SANITIZED,
+                                getErrorHTML(
+                                        String.format(Locale.US, "%s - %d", responseType.toString(), responseCode),
+                                        String.format(
+                                                Locale.US,
+                                                "%d %s</br>%s",
+                                                responseCode,
+                                                responseMsg,
+                                                responseDescription
+                                        )
+                                )
+                        );
+                    }
                 }
-
             }
             else{       //Network Unavailable
                 Log.e(SERVICE_TAG, "Network is Currently Unavailable.");
@@ -184,6 +201,26 @@ public class HTMLSanitizationService extends IntentService {
                     getErrorHTML("IOException", message)
             );
             responseBundle.putInt(RESULT_CODE, EVENT_RESPONSE_EXCEPTION);
+        }
+
+        responseBundle.putString(RESULT_URL, url);
+        if(!wasResponseGood){
+            if(useSearchPreference){
+                Log.v(SERVICE_TAG, "Reformatting as Search Query");
+                String searchQuery;
+                if(searchEnginePref.equals("google")) {
+                    searchQuery = AppUtils.formatSearchQuery(context, originalRequest, R.string.query_search_google);
+                    Log.v(SERVICE_TAG, String.format("Search Query: %s", searchQuery));
+                    handleActionSearch(searchQuery, false);
+                    return;
+                }
+                else if(searchEnginePref.equals("ask")) {
+                    searchQuery = AppUtils.formatSearchQuery(context, originalRequest, R.string.query_search_ask);
+                    Log.v(SERVICE_TAG, String.format("Search Query: %s", searchQuery));
+                    handleActionSearch(searchQuery, false);
+                    return;
+                }
+            }
         }
 
         publishResults(responseBundle);

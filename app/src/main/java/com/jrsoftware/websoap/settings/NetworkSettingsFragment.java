@@ -19,9 +19,11 @@ public class NetworkSettingsFragment extends CustomPreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.pref_whitelist);
+        addPreferencesFromResource(R.xml.pref_network);
         setHasOptionsMenu(true);
 
+        bindBooleanPreference(findPreference(getString(R.string.pref_key_allow_javascript)));
+        bindBooleanPreference(findPreference(getString(R.string.pref_key_force_https)));
         bindPreference(findPreference(getString(R.string.pref_key_whitelist_type)));
     }
 

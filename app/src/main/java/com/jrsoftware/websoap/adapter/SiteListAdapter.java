@@ -10,12 +10,11 @@ import android.widget.TextView;
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
+import com.jrsoftware.websoap.util.AppUtils;
 
 /**
  * Created by jriley on 1/26/16.
  * ListView adapter for Site Entries
- *
- * TODO - Concat Strings with ellipsis if url length exceeds character limit
  */
 public class SiteListAdapter extends ArrayAdapter<SiteEntry> {
 
@@ -64,10 +63,10 @@ public class SiteListAdapter extends ArrayAdapter<SiteEntry> {
             TextView url = (TextView) view.findViewById(R.id.text_url);
 
             if(title != null)
-                title.setText(entry.title());
+                title.setText(AppUtils.concatWithEllipsis(entry.title(), 48));
 
             if(url != null)
-                url.setText(entry.url());
+                url.setText(AppUtils.concatWithEllipsis(entry.url(), 48));
         }
 
         return view;

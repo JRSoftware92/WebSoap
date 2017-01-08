@@ -89,4 +89,14 @@ public class AppUtils {
     public static SharedPreferences getPreferences(Context context){
         return PreferenceManager.getDefaultSharedPreferences(context);
     }
+
+    public static String concatWithEllipsis(String str, int maxLength){
+        if(str != null && maxLength < str.length())
+            return str.substring(0, maxLength - 3) + "\u2026";
+        return str;
+    }
+
+    public static String formatSearchQuery(Context context, String str, int searchEngineStrId){
+        return String.format("%s%s", context.getString(searchEngineStrId), str.replace(' ', '+'));
+    }
 }

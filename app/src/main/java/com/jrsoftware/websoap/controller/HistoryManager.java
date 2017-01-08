@@ -30,13 +30,28 @@ public class HistoryManager {
         current = null;
     }
 
+    public SiteList getSiteHistory(){ return olderHistory; }
+
+    public void setSiteHistory(SiteList list){
+        if(olderHistory == null || olderHistory.size() < 1)
+            olderHistory = list;
+        else {
+            for(SiteEntry entry : list)
+                olderHistory.add(entry);
+        }
+    }
+
+    public void addHistoryEntry(SiteEntry entry){
+        olderHistory.add(entry);
+    }
+
+    public void updateSiteHistory(String url, String title){
+        olderHistory.update(url, title);
+    }
+
     public SiteEntry getLastRequestedURL(){
         return current;
     }
-
-    public SiteList getSiteHistory(){ return olderHistory; }
-
-    public void setSiteHistory(SiteList list){ olderHistory = list; }
 
     /**
      * Pushes the previous current entry onto the previous stack
@@ -79,49 +94,5 @@ public class HistoryManager {
         current = nextStack.pop();
         addHistoryEntry(current);
         return current;
-    }
-
-    public void addHistoryEntry(SiteEntry entry){
-        olderHistory.add(entry);
-    }
-
-    public SiteEntry[] getHistoryArray(){
-        Stack<SiteEntry> tempStack = prevStack;
-        tempStack.push(current);
-        SiteEntry[] prevArr = new SiteEntry[tempStack.size()];
-        SiteEntry[] nextArr = new SiteEntry[nextStack.size()];
-
-        prevArr = tempStack.toArray(prevArr);
-        nextArr = nextStack.toArray(nextArr);
-
-        if(prevArr.length < 1)
-            return nextArr;
-        else if(nextArr.length < 1)
-            return prevArr;
-        else{
-            SiteEntry[] output = new SiteEntry[prevArr.length + nextArr.length];
-            int lengthPrev = prevArr.length;
-            int lengthNext = nextArr.length;
-            for(int i = 0; i < lengthPrev; i++)
-                output[i] = prevArr[i];
-
-            for(int i = 0; i < lengthNext; i++)
-                output[i + lengthPrev] = nextArr[i];
-
-            return output;
-        }
-    }
-
-    public SiteList getHistoryList(){
-        SiteEntry[] entries = getHistoryArray();
-        if(entries == null)
-            return null;
-
-        int length = entries.length;
-        SiteList list = new SiteList(length);
-        for(int i = 0; i < length; i++)
-            list.add(entries[i]);
-
-        return list;
     }
 }

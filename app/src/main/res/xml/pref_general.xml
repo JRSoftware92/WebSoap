@@ -10,18 +10,11 @@
         android:singleLine="true"
         android:title="@string/pref_title_home_page"
         android:summary="@string/pref_description_home_page"/>
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="@string/pref_key_allow_javascript"
-        android:summary="@string/pref_description_allow_javascript"
-        android:summaryOn="@string/pref_description_allow_javascript_true"
-        android:summaryOff="@string/pref_description_allow_javascript_false"
-        android:title="@string/pref_title_allow_javascript" />
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/pref_key_force_https"
-        android:summary="@string/pref_description_force_https"
-        android:summaryOn="@string/pref_description_force_https_true"
-        android:summaryOff="@string/pref_description_force_https_false"
-        android:title="@string/pref_title_force_https" />
+    <ListPreference
+        android:defaultValue="google"
+        android:entries="@array/pref_search_engines"
+        android:entryValues="@array/pref_search_engine_values"
+        android:key="@string/pref_key_search_engine"
+        android:title="@string/pref_title_search_engine"
+        android:summary="@string/pref_description_search_engine"/>
 </PreferenceScreen>

@@ -1,6 +1,7 @@
 package com.jrsoftware.websoap.controller;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.model.SiteEntry;
@@ -55,7 +56,12 @@ public class AppDataCenter {
     }
 
     public void setSiteHistory(SiteList siteHistory) {
+        Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
         historyManager.setSiteHistory(siteHistory);
+    }
+
+    public void updateSiteTitle(String url, String title){
+        historyManager.updateSiteHistory(url, title);
     }
 
     public String backURL(){
@@ -106,28 +112,44 @@ public class AppDataCenter {
         this.bookmarks = bookmarks;
     }
 
+    //Only Checks Internal Files currently
+    public boolean fileExists(String filePath, String dir){
+        if(dir == null)
+            dir = fileManager.getInternalDirectory();
+        else
+            dir = fileManager.toInternalPath(dir);
+
+        return fileManager.exists(dir + filePath);
+    }
+
     public void saveHistory() throws IOException {
-        SiteList history = historyManager.getHistoryList();
+        SiteList history = historyManager.getSiteHistory();
         String filePath = context.getString(R.string.file_history);
 
+        Log.i("saveHistory", String.format("Saving entries: %d", history.size()));
         //TODO - Encrypt file
-        fileManager.writeInternalSerializable(history, filePath, null);
+        if(history.size() > 1)
+            fileManager.writeInternalSerializable(history, filePath, null);
     }
 
     public void loadHistory() throws IOException, ClassNotFoundException {
         String filePath = context.getString(R.string.file_history);
         SiteList history = (SiteList) fileManager.readInternalSerializable(filePath, null);
 
-        //TODO Check null - If null, constructor, else, mutator
-        historyManager = new HistoryManager(history);
+        Log.i("loadHistory", String.format("Loading entries: %d", history.size()));
+
+        if(historyManager == null)
+            historyManager = new HistoryManager(history);
+        else
+            historyManager.setSiteHistory(history);
     }
 
     public void saveBookmarks() throws IOException {
         String filePath = context.getString(R.string.file_bookmarks);
 
-
         //TODO - Encrypt File
-        fileManager.writeInternalSerializable(bookmarks, filePath, null);
+        if(bookmarks.size() > 0)
+            fileManager.writeInternalSerializable(bookmarks, filePath, null);
     }
 
     public void loadBookmarks() throws IOException, ClassNotFoundException {

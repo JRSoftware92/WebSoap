@@ -35,7 +35,7 @@ import java.io.IOException;
 /**
  * Main Entrypoint for the application
  *
- * FIXME - History won't serialize properly
+ * FIXME - History won't serialize properly (Randomly loses an entry)
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
 
     private static final String LOG_TAG = "MAIN-ACTIVITY";
+
     private LocalBroadcastManager broadcastManager;
 
     private ProgressDialog loadingDialog;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
 
     private AppDataCenter dataCenter;
+
+    private boolean eraseForwardStack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +106,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        if(loadBookmarks)
+            loadBookmarks = dataCenter.fileExists(getString(R.string.file_bookmarks), null);
+
+        if(loadHistory)
+            loadHistory = dataCenter.fileExists(getString(R.string.file_history), null);
+
+        Log.i(LOG_TAG, String.format("Load Bookmarks: %s", loadBookmarks ? "Y" : "N"));
+        Log.i(LOG_TAG, String.format("Load History: %s", loadHistory ? "Y" : "N"));
+
         //Load Serialized Bookmarks if necessary
         if(loadBookmarks)
             tryLoadBookmarks();
@@ -113,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Load Site if requested
         if(site != null){
-            sendSearchRequest(site.url(), site.title(), true);
+            sendSearchRequest(site.url(), true);
             return;
         }
 
@@ -123,13 +135,13 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.pref_key_home_page),
                 getString(R.string.pref_default_home_page)
         );
-        sendSearchRequest(homePage, "Home", true);
+        sendSearchRequest(homePage, true);
     }
 
     @Override
     protected void onDestroy() {
-        trySaveBookmarks();
-        trySaveWebHistory();
+        //trySaveBookmarks();
+        //trySaveWebHistory();
         super.onDestroy();
     }
 
@@ -148,15 +160,15 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_back:
                 entry = dataCenter.previousSite();
-                sendSearchRequest(entry.url(), entry.title(), false);
+                sendSearchRequest(entry.url(), false);
                 return true;
             case R.id.action_forward:
                 entry = dataCenter.nextSite();
-                sendSearchRequest(entry.url(), entry.title(), false);
+                sendSearchRequest(entry.url(), false);
                 return true;
             case R.id.action_refresh:
                 entry = dataCenter.getLastRequestedSite();
-                sendSearchRequest(entry.url(), entry.title(), false);
+                sendSearchRequest(entry.url(), false);
                 return true;
             case R.id.action_home:
                 //Load Homepage
@@ -165,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         getString(R.string.pref_key_home_page),
                         getString(R.string.pref_default_home_page)
                 );
-                sendSearchRequest(homePage, "Home", true);
+                sendSearchRequest(homePage, true);
                 return true;
             case R.id.action_bookmark:
                 entry = dataCenter.getLastRequestedSite();
@@ -224,30 +236,13 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Submits an html request to the HTML Sanitization Service
      * @param url - String url to be loaded
-     *
-     * TODO - Refactor logic to account for page titles
-     * TODO - If Invalid Query --> Handle as Google Search Request (or user specified search engine)
      */
-    protected void sendSearchRequest(String url, String title, boolean eraseForwardStack){
+    protected void sendSearchRequest(String url, boolean eraseForwardStack){
         //Validates Search Request
         if(url == null || url.length() < 1)
             return;
 
-        if(!url.startsWith(AppUtils.HTTP)
-                && !url.startsWith(AppUtils.HTTPS)
-                && !url.startsWith(AppUtils.FTP)){
-            SharedPreferences preferences = AppUtils.getPreferences(this);
-            boolean forceHTTPS = preferences.getBoolean(getString(R.string.pref_key_force_https), true);
-            if(forceHTTPS)
-                url = AppUtils.HTTPS + url;
-            else
-                url = AppUtils.HTTP + url;
-        }
-
-        searchView.setQuery(url, false);
-        //Saves the url in the history manager
-        if(!url.equals(dataCenter.getLastRequestedURL()));
-            dataCenter.setCurrentSite(url, title, eraseForwardStack);
+        this.eraseForwardStack = eraseForwardStack;
 
         //Display Loading Dialog while search results are being sent
         loadingDialog.show();
@@ -298,13 +293,20 @@ public class MainActivity extends AppCompatActivity {
         }
         catch(FileNotFoundException fnfe){
             Log.w(LOG_TAG, "Bookmarks File not located.");
+            Log.e(LOG_TAG, fnfe.getMessage());
+            fnfe.printStackTrace();
         }
         catch(ClassNotFoundException cnfe){
             Log.e(LOG_TAG, "Unable to load SiteList");
             Log.e(LOG_TAG, cnfe.getMessage());
+            cnfe.printStackTrace();
         }
         catch(IOException io){
             Log.e(LOG_TAG, "Unexpected Exception has occurred while loading Bookmarks File.");
+            String msg = io.getMessage();
+            if(msg != null)
+                Log.e(LOG_TAG, io.getMessage());
+            io.printStackTrace();
         }
     }
 
@@ -314,13 +316,20 @@ public class MainActivity extends AppCompatActivity {
         }
         catch(FileNotFoundException fnfe){
             Log.w(LOG_TAG, "History File not located.");
+            Log.e(LOG_TAG, fnfe.getMessage());
+            fnfe.printStackTrace();
         }
         catch(ClassNotFoundException cnfe){
             Log.e(LOG_TAG, "Unable to load SiteList");
             Log.e(LOG_TAG, cnfe.getMessage());
+            cnfe.printStackTrace();
         }
         catch(IOException io){
             Log.e(LOG_TAG, "Unexpected Exception has occurred while loading History File.");
+            String msg = io.getMessage();
+            if(msg != null)
+                Log.e(LOG_TAG, io.getMessage());
+            io.printStackTrace();
         }
     }
 
@@ -335,11 +344,15 @@ public class MainActivity extends AppCompatActivity {
                 int resultCode = resultBundle.getInt(HTMLSanitizationService.RESULT_CODE,
                         HTMLSanitizationService.EVENT_RESPONSE_EXCEPTION);
                 String html = resultBundle.getString(HTMLSanitizationService.RESULT_SANITIZED);
+                String url = resultBundle.getString(HTMLSanitizationService.RESULT_URL);
+                String title = url;
 
                 //Check the result code to determine how to handle the intent
                 switch(resultCode){
                     case HTMLSanitizationService.EVENT_REQUEST_SUCCESSFUL:
-                        //Leave it alone
+                        title = resultBundle.getString(HTMLSanitizationService.RESULT_TITLE);
+                        dataCenter.updateSiteTitle(url, title);
+                        setTitle(AppUtils.concatWithEllipsis(title, 24));
                         break;
                     case HTMLSanitizationService.EVENT_RESPONSE_BAD:
                         AppUtils.showToastLong(context, "Request Failed.");
@@ -356,6 +369,13 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
 
+                searchView.setQuery(url, false);
+                //Saves the url in the history manager
+                if(!url.equals(dataCenter.getLastRequestedURL()));
+                    dataCenter.setCurrentSite(url, title, eraseForwardStack);
+
+                trySaveWebHistory();
+
                 //Display Sanitized HTML
                 displayHTML(html);
                 //Dismiss loading dialog
@@ -367,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
     private WebViewClient webViewClient = new WebViewClient() {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            sendSearchRequest(url, url, true);
+            sendSearchRequest(url, true);
             return true;
         }
     };
@@ -380,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onQueryTextSubmit(String query) {
-            sendSearchRequest(query, query, true);
+            sendSearchRequest(query, true);
             return true;
         }
     };

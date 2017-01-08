@@ -111,7 +111,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralSettingsFragment.class.getName().equals(fragmentName)
-                || WhitelistSettingsFragment.class.getName().equals(fragmentName)
+                || NetworkSettingsFragment.class.getName().equals(fragmentName)
                 || AboutSettingsFragment.class.getName().equals(fragmentName);
     }
 

@@ -14,7 +14,6 @@ import com.jrsoftware.websoap.R;
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class GeneralSettingsFragment extends CustomPreferenceFragment {
-    private static final String LOG_TAG = "GEN-PREF-FRAGMENT";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -22,8 +21,8 @@ public class GeneralSettingsFragment extends CustomPreferenceFragment {
         addPreferencesFromResource(R.xml.pref_general);
         setHasOptionsMenu(true);
 
-        bindBooleanPreference(findPreference(getString(R.string.pref_key_allow_javascript)));
-        bindBooleanPreference(findPreference(getString(R.string.pref_key_force_https)));
+        bindPreference(findPreference(getString(R.string.pref_key_home_page)));
+        bindPreference(findPreference(getString(R.string.pref_key_search_engine)));
     }
 
     @Override

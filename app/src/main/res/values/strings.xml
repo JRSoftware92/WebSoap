@@ -102,4 +102,12 @@
     <string name="pref_summary_remember_history">If enabled, the application will store your website history in a serialized file on your device.</string>
     <string name="pref_summary_remember_history_on">The application is currently saving your website history in a serialized file on your device.</string>
     <string name="pref_summary_remember_history_off">The application is not currently tracking your web history.</string>
+    <string name="title_bookmarks">Bookmarks</string>
+    <string name="title_web_history">Recent Web History</string>
+
+    <string name="query_search_google">https://www.google.com/#q=</string>
+    <string name="query_search_ask">http://www.ask.com/web?q=</string>
+    <string name="pref_description_search_engine">This setting allows bad url entries to be queried as search engine searches.</string>
+    <string name="pref_title_search_engine">Search Engine</string>
+    <string name="pref_key_search_engine">com.jrsoftware.websoap.settings.searchEngine</string>
 </resources>

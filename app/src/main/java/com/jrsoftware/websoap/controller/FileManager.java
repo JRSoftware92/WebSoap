@@ -218,14 +218,33 @@ public class FileManager {
     private void writeSerializable(Serializable object, String fileName, String dir)
                                             throws IOException {
         String filePath = dir + fileName;
-        Log.d(LOG_TAG, String.format("writeSerializable: %s", filePath));
+        Log.i(LOG_TAG, String.format("writeSerializable: %s", filePath));
+        FileOutputStream fileStream = null;
+        ObjectOutputStream output = null;
+        IOException exception = null;
 
-        FileOutputStream fileStream = new FileOutputStream(filePath);
-        ObjectOutputStream output = new ObjectOutputStream(fileStream);
+        try {
+            fileStream = new FileOutputStream(filePath);
+            output = new ObjectOutputStream(fileStream);
+            output.writeObject(object);
+        }
+        catch(IOException io){
+            exception = io;
+        }
+        finally{
+            try {
+                if (output != null)
+                    output.close();
+                if (fileStream != null)
+                    fileStream.close();
+            }
+            catch(IOException io){
+                exception = io;
+            }
+        }
 
-        output.writeObject(object);
-        output.close();
-        fileStream.close();
+        if(exception != null)
+            throw exception;
     }
 
     public void writeInternalSerializable(Serializable object, String fileName, String dir)
@@ -344,16 +363,38 @@ public class FileManager {
 	}
 
     private Object readSerializable(String fileName, String dir)
-                                            throws IOException, ClassNotFoundException{
+                                            throws IOException, ClassNotFoundException {
         String filePath = dir + fileName;
-        Log.d(LOG_TAG, String.format("readSerializable: %s", filePath));
+        Log.i(LOG_TAG, String.format("readSerializable: %s", filePath));
 
-        FileInputStream file = new FileInputStream(filePath);
-        ObjectInputStream input = new ObjectInputStream(file);
+        FileInputStream file = null;
+        ObjectInputStream input = null;
+        IOException exception = null;
+        Object obj = null;
 
-        Object obj = input.readObject();
-        input.close();
-        file.close();
+        try {
+            file = new FileInputStream(filePath);
+            input = new ObjectInputStream(file);
+
+            obj = input.readObject();
+        }
+        catch(IOException io){
+            exception = io;
+        }
+        finally {
+            try {
+                if (input != null)
+                    input.close();
+                if (file != null)
+                    file.close();
+            }
+            catch(IOException io){
+                exception = io;
+            }
+        }
+
+        if(exception != null)
+            throw exception;
 
         return obj;
     }

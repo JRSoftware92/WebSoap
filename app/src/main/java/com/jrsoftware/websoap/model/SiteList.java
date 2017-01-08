@@ -11,8 +11,6 @@ import java.util.HashMap;
  * Created by jriley on 1/4/17.
  *
  * Parcelable Array List of SiteEntry objects
- *
- * TODO - Create HashMap of Indeces for quick url referencing
  */
 
 public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serializable {
@@ -52,6 +50,11 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         }
     }
 
+    public SiteEntry get(String url){
+        int index = urlMap.get(url);
+        return get(index);
+    }
+
     @Override
     public boolean add(SiteEntry object) {
         if(object == null)
@@ -79,6 +82,16 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         super.remove(index);
         urlMap.put(object.url(), index);
         super.add(index, object);
+    }
+
+    public void update(String url, String title){
+        if(!urlMap.containsKey(url))
+            add(new SiteEntry(url, title));
+
+        int index = urlMap.get(url);
+        SiteEntry object = new SiteEntry(url, title);
+
+        add(index, object);
     }
 
     @Override
