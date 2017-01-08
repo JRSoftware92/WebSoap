@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_bookmarks:
                 SiteList bookmarks = dataCenter.getBookmarks();
                 intent = new Intent(this, BookmarkListActivity.class);
-                intent.putParcelableArrayListExtra(BookmarkListActivity.ARG_BOOKMARKS, bookmarks);
+                intent.putExtra(BookmarkListActivity.ARG_BOOKMARKS, (Parcelable)bookmarks);
                 intent.putExtra(BookmarkListActivity.ARG_HISTORY, dataCenter.getHistoryManager());
 
                 startActivity(intent);

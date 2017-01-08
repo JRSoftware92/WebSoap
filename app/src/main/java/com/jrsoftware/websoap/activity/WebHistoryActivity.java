@@ -50,7 +50,7 @@ public class WebHistoryActivity extends AppCompatActivity {
                 history = historyManager.getSiteHistory();
 
             if(history != null)
-                Collections.reverse(history);
+                history.reverse();
         }
         SiteListAdapter adapter = new SiteListAdapter(this, history);
         listView.setAdapter(adapter);
@@ -58,7 +58,7 @@ public class WebHistoryActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SiteEntry entry = history.get(position);
-                Collections.reverse(history);
+                history.reverse();
                 historyManager.setSiteHistory(history);
 
                 Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));

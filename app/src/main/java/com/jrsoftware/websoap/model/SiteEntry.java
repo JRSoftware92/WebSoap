@@ -62,4 +62,12 @@ public class SiteEntry implements Parcelable, Serializable {
         SiteEntry obj = (SiteEntry) o;
         return obj.url.equals(this.url);
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Entry: { title='%s'; url ='%s'; };",
+                title, url
+        );
+    }
 }

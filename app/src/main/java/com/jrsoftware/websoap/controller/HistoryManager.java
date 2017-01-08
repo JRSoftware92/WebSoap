@@ -45,19 +45,30 @@ public class HistoryManager implements Parcelable {
         prevStack = new Stack<>();
         nextStack = new Stack<>();
         olderHistory = new SiteList();
+
+        Log.d(LOG_TAG, String.format("Start of List Size: %d", olderHistory.size()));
+
         prevStack.addAll(Arrays.asList(prevArr));
         nextStack.addAll(Arrays.asList(nextArr));
         olderHistory.addAll(historyArr);
 
+        Log.d(LOG_TAG, "Array: ");
+        for(SiteEntry entry : historyArr) {
+            if(entry != null)
+                Log.d(LOG_TAG, String.format("Title: %s; URL: %s", entry.title(), entry.url()));
+            else
+                Log.d(LOG_TAG, "NULL ENTRY FOUND");
+        }
+
         Log.d(LOG_TAG, String.format("History Arr Load: %d", historyArr.length));
         Log.d(LOG_TAG, String.format("History List Load: %d", olderHistory.size()));
+        Log.d(LOG_TAG, String.format("Are they equal? %s", olderHistory.size() == historyArr.length ? "Yes" : "No"));
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         SiteEntry[] prevArr = new SiteEntry[prevStack.size()];
         SiteEntry[] nextArr = new SiteEntry[nextStack.size()];
-        SiteEntry[] historyArr = new SiteEntry[olderHistory.size()];
 
         int i = 0;
         while(!prevStack.isEmpty())
@@ -67,7 +78,10 @@ public class HistoryManager implements Parcelable {
         while(!nextStack.isEmpty())
             nextArr[i++] = nextStack.pop();
 
-        olderHistory.toArray(historyArr);
+        int length = olderHistory.size();
+        SiteEntry[] historyArr = new SiteEntry[length];
+        for(i = 0; i < length; i++)
+            historyArr[i] = olderHistory.get(i);
 
         dest.writeParcelable(current, flags);
         dest.writeTypedArray(prevArr, flags);
