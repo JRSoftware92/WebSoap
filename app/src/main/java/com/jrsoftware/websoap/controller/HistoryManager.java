@@ -7,7 +7,6 @@ import android.util.Log;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
 
@@ -18,6 +17,7 @@ import java.util.Stack;
  */
 
 public class HistoryManager implements Parcelable {
+    private static final String LOG_TAG = "HISTORY-MANAGER";
     private SiteEntry current;
     private Stack<SiteEntry> prevStack, nextStack;
     private SiteList olderHistory;
@@ -47,12 +47,10 @@ public class HistoryManager implements Parcelable {
         olderHistory = new SiteList();
         prevStack.addAll(Arrays.asList(prevArr));
         nextStack.addAll(Arrays.asList(nextArr));
+        olderHistory.addAll(historyArr);
 
-        int length = historyArr.length;
-        for(int i = 0; i < length; i++)
-            olderHistory.add(historyArr[i]);
-
-        Log.i("HISTORY-MANAGER-INIT", String.format("History on Load: %d", olderHistory.size()));
+        Log.d(LOG_TAG, String.format("History Arr Load: %d", historyArr.length));
+        Log.d(LOG_TAG, String.format("History List Load: %d", olderHistory.size()));
     }
 
     @Override
@@ -71,13 +69,13 @@ public class HistoryManager implements Parcelable {
 
         olderHistory.toArray(historyArr);
 
-
         dest.writeParcelable(current, flags);
         dest.writeTypedArray(prevArr, flags);
         dest.writeTypedArray(nextArr, flags);
         dest.writeTypedArray(historyArr, flags);
 
-        Log.i("HISTORY-MANAGER-INIT", String.format("History on Write: %d", olderHistory.size()));
+        Log.d(LOG_TAG, String.format("History Arr Write: %d", historyArr.length));
+        Log.d(LOG_TAG, String.format("History List Write: %d", olderHistory.size()));
     }
 
     public SiteList getSiteHistory(){ return olderHistory; }
@@ -85,11 +83,8 @@ public class HistoryManager implements Parcelable {
     public void setSiteHistory(SiteList list){
         if(olderHistory == null || olderHistory.size() < 1)
             olderHistory = list;
-        else {
-            int size = list.size();
-            for(int i = 0; i < size; i++)
-                olderHistory.add(list.get(i));
-        }
+        else
+            olderHistory.addAll(list);
     }
 
     public void addHistoryEntry(SiteEntry entry){
@@ -125,7 +120,6 @@ public class HistoryManager implements Parcelable {
     public SiteEntry back(){
         //Returns the current url if the stack is empty
         if(prevStack.isEmpty()) {
-            Log.w("HISTORY-MANAGER", "Back stack is empty.");
             return current;
         }
 
@@ -141,7 +135,6 @@ public class HistoryManager implements Parcelable {
     public SiteEntry next(){
         //Returns the current url if the stack is empty
         if(nextStack.isEmpty()) {
-            Log.w("HISTORY-MANAGER", "Forward stack is empty.");
             return current;
         }
 

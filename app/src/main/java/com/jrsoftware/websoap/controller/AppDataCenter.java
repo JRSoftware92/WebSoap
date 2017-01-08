@@ -1,7 +1,6 @@
 package com.jrsoftware.websoap.controller;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.model.SiteEntry;
@@ -58,12 +57,10 @@ public class AppDataCenter {
     }
 
     public void setSiteHistory(SiteList siteHistory) {
-        //Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
         historyManager.setSiteHistory(siteHistory);
     }
 
     public void setSiteHistoryManager(HistoryManager historyManager) {
-        //Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
         this.historyManager = historyManager;
     }
 
@@ -133,7 +130,6 @@ public class AppDataCenter {
         SiteList history = historyManager.getSiteHistory();
         String filePath = context.getString(R.string.file_history);
 
-        //Log.i("saveHistory", String.format("Saving entries: %d", history.size()));
         //TODO - Encrypt file
         if(history.size() > 1)
             fileManager.writeInternalSerializable(history, filePath, null);
@@ -142,8 +138,6 @@ public class AppDataCenter {
     public void loadHistory() throws IOException, ClassNotFoundException {
         String filePath = context.getString(R.string.file_history);
         SiteList history = (SiteList) fileManager.readInternalSerializable(filePath, null);
-
-        //Log.i("loadHistory", String.format("Loading entries: %d", history.size()));
 
         if(historyManager == null)
             historyManager = new HistoryManager(history);

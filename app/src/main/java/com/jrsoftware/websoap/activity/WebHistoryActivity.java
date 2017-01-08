@@ -61,7 +61,7 @@ public class WebHistoryActivity extends AppCompatActivity {
                 Collections.reverse(history);
                 historyManager.setSiteHistory(history);
 
-                Log.i(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
+                Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
                 Log.i(LOG_TAG, String.format("Size of history: %d", history.size()));
 
                 Intent i = new Intent(context, MainActivity.class);

@@ -2,11 +2,11 @@ package com.jrsoftware.websoap.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by jriley on 1/4/17.
@@ -23,16 +23,6 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         urlMap = new HashMap<>();
     }
 
-    public SiteList(int initialSize){
-        super(initialSize);
-        urlMap = new HashMap<>(initialSize);
-    }
-
-    public SiteList(SiteEntry[] entries){
-        super();
-        initialize(entries);
-    }
-
     protected SiteList(Parcel in) {
         SiteEntry[] arr = in.createTypedArray(SiteEntry.CREATOR);
         if(arr != null)
@@ -44,13 +34,7 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         if(entries == null)
             return;
 
-        int length = entries.length;
-        if(length > 0){
-            for(int i = 0; i < length; i++)
-                add(entries[i]);
-        }
-
-        Log.i("SITE-LIST-INIT", String.format("Entries on Init: %d", length));
+        addAll(entries);
     }
 
     @Override
@@ -59,13 +43,20 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         arr = toArray(arr);
 
         dest.writeTypedArray(arr, flags);
-
-        Log.i("SITE-LIST-INIT", String.format("Entries on Write: %d", arr.length));
     }
 
     public SiteEntry get(String url){
         int index = urlMap.get(url);
         return get(index);
+    }
+
+    @Override
+    public SiteEntry set(int index, SiteEntry object) {
+        SiteEntry original = get(index);
+        urlMap.remove(original.url());
+
+        urlMap.put(object.url(), index);
+        return super.set(index, object);
     }
 
     @Override
@@ -82,7 +73,7 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
 
         //Adds New Entry at the bottom of the list
         super.add(object);
-        urlMap.put(object.url(), indexOf(object));
+        urlMap.put(object.url(), size() - 1);
 
         return true;
     }
@@ -102,6 +93,28 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
             temp = get(i);
             urlMap.put(temp.url(), i);
         }
+    }
+
+    public boolean addAll(SiteEntry[] entries) {
+        if(entries == null)
+            return false;
+
+        int length = entries.length;
+        for(int i = 0; i < length; i++)
+            add(entries[i]);
+
+        return true;
+    }
+
+    public boolean addAll(List<SiteEntry> entries) {
+        if(entries == null)
+            return false;
+
+        int length = entries.size();
+        for(int i = 0; i < length; i++)
+            add(entries.get(i));
+
+        return true;
     }
 
     @Override
