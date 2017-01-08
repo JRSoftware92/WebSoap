@@ -2,6 +2,7 @@ package com.jrsoftware.websoap.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,9 +28,9 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         urlMap = new HashMap<>(initialSize);
     }
 
-    public SiteList(SiteEntry[] bookmarks){
+    public SiteList(SiteEntry[] entries){
         super();
-        initialize(bookmarks);
+        initialize(entries);
     }
 
     protected SiteList(Parcel in) {
@@ -38,16 +39,28 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
             initialize(arr);
     }
 
-    private void initialize(SiteEntry[] bookmarks){
+    private void initialize(SiteEntry[] entries){
         urlMap = new HashMap<>();
-        if(bookmarks == null)
+        if(entries == null)
             return;
 
-        int length = bookmarks.length;
+        int length = entries.length;
         if(length > 0){
             for(int i = 0; i < length; i++)
-                add(bookmarks[i]);
+                add(entries[i]);
         }
+
+        Log.i("SITE-LIST-INIT", String.format("Entries on Init: %d", length));
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        SiteEntry[] arr = new SiteEntry[size()];
+        arr = toArray(arr);
+
+        dest.writeTypedArray(arr, flags);
+
+        Log.i("SITE-LIST-INIT", String.format("Entries on Write: %d", arr.length));
     }
 
     public SiteEntry get(String url){
@@ -69,7 +82,7 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
 
         //Adds New Entry at the bottom of the list
         super.add(object);
-        urlMap.put(object.url(), size() - 1);
+        urlMap.put(object.url(), indexOf(object));
 
         return true;
     }
@@ -79,27 +92,23 @@ public class SiteList extends ArrayList<SiteEntry> implements Parcelable, Serial
         if(object == null || index < 0 || index >= size())
             return;
 
-        super.remove(index);
-        urlMap.put(object.url(), index);
+        //Adds entry at the specified index
         super.add(index, object);
-    }
 
-    public void update(String url, String title){
-        if(!urlMap.containsKey(url))
-            add(new SiteEntry(url, title));
-
-        int index = urlMap.get(url);
-        SiteEntry object = new SiteEntry(url, title);
-
-        add(index, object);
+        int size = size();
+        SiteEntry temp;
+        //Updates URL Map
+        for(int i = index; i < size; i++){
+            temp = get(i);
+            urlMap.put(temp.url(), i);
+        }
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        SiteEntry[] arr = new SiteEntry[size()];
-        arr = toArray(arr);
-
-        dest.writeTypedArray(arr, flags);
+    public SiteEntry remove(int index) {
+        SiteEntry obj = get(index);
+        urlMap.remove(obj.url());
+        return super.remove(index);
     }
 
     @Override

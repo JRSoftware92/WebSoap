@@ -218,7 +218,7 @@ public class FileManager {
     private void writeSerializable(Serializable object, String fileName, String dir)
                                             throws IOException {
         String filePath = dir + fileName;
-        Log.i(LOG_TAG, String.format("writeSerializable: %s", filePath));
+        //Log.i(LOG_TAG, String.format("writeSerializable: %s", filePath));
         FileOutputStream fileStream = null;
         ObjectOutputStream output = null;
         IOException exception = null;
@@ -254,7 +254,7 @@ public class FileManager {
 
         if(dir == null) {
             dir = getInternalDirectory();
-            Log.w(LOG_TAG, String.format("Directory not specified. Writing to Default Directory: %s", dir));
+            //Log.w(LOG_TAG, String.format("Directory not specified. Writing to Default Directory: %s", dir));
         }
         else
             dir = toInternalPath(dir);
@@ -365,7 +365,7 @@ public class FileManager {
     private Object readSerializable(String fileName, String dir)
                                             throws IOException, ClassNotFoundException {
         String filePath = dir + fileName;
-        Log.i(LOG_TAG, String.format("readSerializable: %s", filePath));
+        //Log.i(LOG_TAG, String.format("readSerializable: %s", filePath));
 
         FileInputStream file = null;
         ObjectInputStream input = null;
@@ -403,7 +403,7 @@ public class FileManager {
                                             throws IOException, ClassNotFoundException {
         if(dir == null) {
             dir = getInternalDirectory();
-            Log.w(LOG_TAG, String.format("Directory not specified. Reading from Default Directory: %s", dir));
+            //Log.w(LOG_TAG, String.format("Directory not specified. Reading from Default Directory: %s", dir));
         }
         else
             dir = toInternalPath(dir);

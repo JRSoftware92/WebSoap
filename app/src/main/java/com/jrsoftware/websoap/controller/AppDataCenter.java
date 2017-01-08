@@ -51,13 +51,20 @@ public class AppDataCenter {
 
     public SiteList getSiteHistory(){ return historyManager.getSiteHistory(); }
 
+    public HistoryManager getHistoryManager() { return historyManager; }
+
     public void setCurrentSite(String url, String title, boolean eraseForwardStack){
         historyManager.setCurrent(url, title, eraseForwardStack);
     }
 
     public void setSiteHistory(SiteList siteHistory) {
-        Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
+        //Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
         historyManager.setSiteHistory(siteHistory);
+    }
+
+    public void setSiteHistoryManager(HistoryManager historyManager) {
+        //Log.i("setSiteHistory", String.format("Sites: %d", siteHistory.size()));
+        this.historyManager = historyManager;
     }
 
     public void updateSiteTitle(String url, String title){
@@ -126,7 +133,7 @@ public class AppDataCenter {
         SiteList history = historyManager.getSiteHistory();
         String filePath = context.getString(R.string.file_history);
 
-        Log.i("saveHistory", String.format("Saving entries: %d", history.size()));
+        //Log.i("saveHistory", String.format("Saving entries: %d", history.size()));
         //TODO - Encrypt file
         if(history.size() > 1)
             fileManager.writeInternalSerializable(history, filePath, null);
@@ -136,7 +143,7 @@ public class AppDataCenter {
         String filePath = context.getString(R.string.file_history);
         SiteList history = (SiteList) fileManager.readInternalSerializable(filePath, null);
 
-        Log.i("loadHistory", String.format("Loading entries: %d", history.size()));
+        //Log.i("loadHistory", String.format("Loading entries: %d", history.size()));
 
         if(historyManager == null)
             historyManager = new HistoryManager(history);

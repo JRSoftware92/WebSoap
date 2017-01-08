@@ -22,6 +22,7 @@ import android.widget.EditText;
 
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.controller.AppDataCenter;
+import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.services.HTMLSanitizationService;
@@ -35,7 +36,7 @@ import java.io.IOException;
 /**
  * Main Entrypoint for the application
  *
- * FIXME - History won't serialize properly (Randomly loses an entry)
+ * FIXME - History won't serialize properly (Loses entry on history selection, appears to be the first element)
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -91,15 +92,19 @@ public class MainActivity extends AppCompatActivity {
                 site = intent.getParcelableExtra(ARG_SITE);
                 if(intent.hasExtra(ARG_BOOKMARKS)){
                     SiteList bookmarks = intent.getParcelableExtra(ARG_BOOKMARKS);
+                    HistoryManager history = intent.getParcelableExtra(ARG_HISTORY);
                     dataCenter.setBookmarks(bookmarks);
+                    dataCenter.setSiteHistoryManager(history);
                     loadBookmarks = false;
 
                     trySaveBookmarks();
                 }
                 if(intent.hasExtra(ARG_HISTORY)){
-                    SiteList history = intent.getParcelableExtra(ARG_HISTORY);
-                    dataCenter.setSiteHistory(history);
+                    HistoryManager history = intent.getParcelableExtra(ARG_HISTORY);
+                    dataCenter.setSiteHistoryManager(history);
                     loadHistory = false;
+
+                    Log.i(LOG_TAG, String.format("Parceled history: %d", history.getSiteHistory().size()));
 
                     trySaveWebHistory();
                 }
@@ -112,20 +117,20 @@ public class MainActivity extends AppCompatActivity {
         if(loadHistory)
             loadHistory = dataCenter.fileExists(getString(R.string.file_history), null);
 
-        Log.i(LOG_TAG, String.format("Load Bookmarks: %s", loadBookmarks ? "Y" : "N"));
-        Log.i(LOG_TAG, String.format("Load History: %s", loadHistory ? "Y" : "N"));
-
         //Load Serialized Bookmarks if necessary
         if(loadBookmarks)
             tryLoadBookmarks();
 
         //Load Web History if necessary
-        if(loadHistory)
+        if(loadHistory) {
             tryLoadWebHistory();
+            SiteList history = dataCenter.getSiteHistory();
+            Log.i(LOG_TAG, String.format("Loaded history: %d", history.size()));
+        }
 
         //Load Site if requested
         if(site != null){
-            sendSearchRequest(site.url(), true);
+            sendSearchRequest(site.url(), false);
             return;
         }
 
@@ -136,13 +141,6 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.pref_default_home_page)
         );
         sendSearchRequest(homePage, true);
-    }
-
-    @Override
-    protected void onDestroy() {
-        //trySaveBookmarks();
-        //trySaveWebHistory();
-        super.onDestroy();
     }
 
     @Override
@@ -160,15 +158,20 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_back:
                 entry = dataCenter.previousSite();
-                sendSearchRequest(entry.url(), false);
+                if(entry != null)
+                    sendSearchRequest(entry.url(), false);
                 return true;
             case R.id.action_forward:
                 entry = dataCenter.nextSite();
-                sendSearchRequest(entry.url(), false);
+                if(entry != null)
+                    sendSearchRequest(entry.url(), false);
                 return true;
             case R.id.action_refresh:
                 entry = dataCenter.getLastRequestedSite();
-                sendSearchRequest(entry.url(), false);
+                if(entry != null)
+                    sendSearchRequest(entry.url(), false);
+                else
+                    AppUtils.showToastLong(this, "Unable to send refresh request due to unexpected error.");
                 return true;
             case R.id.action_home:
                 //Load Homepage
@@ -181,19 +184,22 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_bookmark:
                 entry = dataCenter.getLastRequestedSite();
-                showNewBookmarkDialog(entry);
+                if(entry != null)
+                    showNewBookmarkDialog(entry);
+                else
+                    AppUtils.showToastLong(this, "Unable to bookmark site due to unexpected error.");
                 return true;
             case R.id.action_bookmarks:
                 SiteList bookmarks = dataCenter.getBookmarks();
                 intent = new Intent(this, BookmarkListActivity.class);
                 intent.putParcelableArrayListExtra(BookmarkListActivity.ARG_BOOKMARKS, bookmarks);
+                intent.putExtra(BookmarkListActivity.ARG_HISTORY, dataCenter.getHistoryManager());
 
                 startActivity(intent);
                 return true;
             case R.id.action_history:
-                SiteList history = dataCenter.getSiteHistory();
                 intent = new Intent(this, WebHistoryActivity.class);
-                intent.putParcelableArrayListExtra(WebHistoryActivity.ARG_HISTORY, history);
+                intent.putExtra(BookmarkListActivity.ARG_HISTORY, dataCenter.getHistoryManager());
 
                 startActivity(intent);
                 return true;
@@ -251,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         HTMLSanitizationService.startActionSearch(this, url);
     }
 
-    private void displayHTML(String html) {
+    private void displayHTML(String url, String html) {
         if(html == null || html.length() < 1)
             return;
 
@@ -263,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.pref_key_allow_javascript), false
         );
         webView.getSettings().setJavaScriptEnabled(enableJavascript);
-        webView.loadDataWithBaseURL("", html, "text/html", "UTF-8", "");
+        webView.loadDataWithBaseURL(url, html, "text/html", "UTF-8", url);
     }
 
     private void trySaveBookmarks(){
@@ -345,6 +351,7 @@ public class MainActivity extends AppCompatActivity {
                         HTMLSanitizationService.EVENT_RESPONSE_EXCEPTION);
                 String html = resultBundle.getString(HTMLSanitizationService.RESULT_SANITIZED);
                 String url = resultBundle.getString(HTMLSanitizationService.RESULT_URL);
+                String refUrl = url;
                 String title = url;
 
                 //Check the result code to determine how to handle the intent
@@ -356,16 +363,20 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case HTMLSanitizationService.EVENT_RESPONSE_BAD:
                         AppUtils.showToastLong(context, "Request Failed.");
+                        refUrl = null;
                         break;
                     case HTMLSanitizationService.EVENT_NETWORK_UNAVAILABLE:
                         AppUtils.showToastShort(context, "Network is currently unavailable.");
+                        refUrl = null;
                         break;
                     case HTMLSanitizationService.EVENT_RESPONSE_UNSUCCESSFUL:
                         AppUtils.showToastLong(context, "Response Unsuccessful.");
+                        refUrl = null;
                         break;
                     case HTMLSanitizationService.EVENT_RESPONSE_EXCEPTION:
                     default:
                         AppUtils.showToastLong(context, "Error has occurred with response.");
+                        refUrl = null;
                         break;
                 }
 
@@ -377,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
                 trySaveWebHistory();
 
                 //Display Sanitized HTML
-                displayHTML(html);
+                displayHTML(refUrl, html);
                 //Dismiss loading dialog
                 loadingDialog.dismiss();
             }

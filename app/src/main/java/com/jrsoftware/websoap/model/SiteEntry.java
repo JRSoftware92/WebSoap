@@ -51,4 +51,15 @@ public class SiteEntry implements Parcelable, Serializable {
             return new SiteEntry[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if(o == null)
+            return false;
+        if(!(o instanceof SiteEntry))
+            return false;
+
+        SiteEntry obj = (SiteEntry) o;
+        return obj.url.equals(this.url);
+    }
 }

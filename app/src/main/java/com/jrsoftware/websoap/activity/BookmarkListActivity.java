@@ -12,6 +12,7 @@ import android.widget.ListView;
 
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.adapter.SiteListAdapter;
+import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.util.DialogUtils;
@@ -19,10 +20,12 @@ import com.jrsoftware.websoap.util.DialogUtils;
 public class BookmarkListActivity extends AppCompatActivity {
 
     public static final String ARG_BOOKMARKS = "com.jrsoftware.websoap.bookmarks";
+    public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
 
     ListView listView;
 
     private SiteList bookmarks;
+    private HistoryManager historyManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +40,10 @@ public class BookmarkListActivity extends AppCompatActivity {
         Intent i = getIntent();
         if(i != null){
             Bundle extras = i.getExtras();
-            if(extras != null)
+            if(extras != null) {
                 bookmarks = extras.getParcelable(ARG_BOOKMARKS);
+                historyManager = extras.getParcelable(ARG_HISTORY);
+            }
         }
         SiteListAdapter adapter = new SiteListAdapter(this, bookmarks);
         listView.setAdapter(adapter);
@@ -94,4 +99,6 @@ public class BookmarkListActivity extends AppCompatActivity {
                 }
         );
     }
+
+    //TODO - Override onBackPressed --> Resend intent with updated bookmarks
 }
