@@ -2,9 +2,11 @@ package com.jrsoftware.websoap.controller;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteTree;
+import com.jrsoftware.websoap.util.CustomTimeUtils;
 
 /**
  * Created by jriley on 1/4/17.
@@ -56,7 +58,7 @@ public class HistoryManager implements Parcelable {
     }
 
     public void updateSiteHistory(String url, String title){
-        history.add(new SiteEntry(url, title, System.currentTimeMillis()));
+        history.add(new SiteEntry(url, title, CustomTimeUtils.today()));
     }
     /**
      * Pushes the previous current entry onto the previous stack
@@ -66,11 +68,26 @@ public class HistoryManager implements Parcelable {
         if(newUrl == null)
             return;
 
-        current = new SiteEntry(newUrl, title, System.currentTimeMillis());
+        current = new SiteEntry(newUrl, title, CustomTimeUtils.today());
         if(eraseForwardStack)
             clearForwardStack();
 
         addHistoryEntry(current);
+    }
+
+    public void clearBeforeDate(long date){
+        if(date == -1){
+            clear();
+            return;
+        }
+
+        Log.i("HISTORY-CLEAR", String.format("History Size Before Clear: %d", history.size()));
+        history.removeTail(date, true);
+        Log.i("HISTORY-CLEAR", String.format("History Size After Clear: %d", history.size()));
+    }
+
+    public void clear(){
+        history.clear();
     }
 
     public void clearForwardStack(){

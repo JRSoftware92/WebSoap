@@ -24,6 +24,34 @@
         <item>google</item>
         <item>ask</item>
     </string-array>
+    <string-array name="pref_history_time_period">
+        <item>All Time</item>
+        <item>1 hour ago</item>
+        <item>2 hours ago</item>
+        <item>6 hours ago</item>
+        <item>12 hours ago</item>
+        <item>1 day ago</item>
+        <item>2 days ago</item>
+        <item>1 week ago</item>
+        <item>1 month ago</item>
+        <item>2 months ago</item>
+        <item>6 months ago</item>
+        <item>1 year Ago</item>
+    </string-array>
+    <string-array name="pref_history_time_period_values">
+        <item>all-time</item>
+        <item>1h</item>
+        <item>2h</item>
+        <item>6h</item>
+        <item>12h</item>
+        <item>1d</item>
+        <item>2d</item>
+        <item>1w</item>
+        <item>1m</item>
+        <item>2m</item>
+        <item>6m</item>
+        <item>1y</item>
+    </string-array>
     <string-array name="array_bookmark_options">
         <item>Delete Bookmark</item>
     </string-array>

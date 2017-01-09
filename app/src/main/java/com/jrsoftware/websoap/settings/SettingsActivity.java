@@ -1,16 +1,20 @@
 package com.jrsoftware.websoap.settings;
 
 import android.annotation.TargetApi;
+import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
 import com.jrsoftware.websoap.R;
+import com.jrsoftware.websoap.activity.MainActivity;
 import com.jrsoftware.websoap.util.AppUtils;
 
 import java.util.List;
@@ -54,6 +58,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     @Override
     public boolean onIsMultiPane() {
         return AppUtils.isXLargeTablet(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
     }
 
     @Override
@@ -111,6 +121,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralSettingsFragment.class.getName().equals(fragmentName)
+                || DataSettingsFragment.class.getName().equals(fragmentName)
                 || NetworkSettingsFragment.class.getName().equals(fragmentName)
                 || AboutSettingsFragment.class.getName().equals(fragmentName);
     }

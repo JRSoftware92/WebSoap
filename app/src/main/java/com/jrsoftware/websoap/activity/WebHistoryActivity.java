@@ -20,7 +20,8 @@ import com.jrsoftware.websoap.util.DialogUtils;
 
 import java.util.ArrayList;
 
-public class WebHistoryActivity extends AppCompatActivity {
+public class WebHistoryActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
+                                                            AdapterView.OnItemLongClickListener {
 
     public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
     private static final String LOG_TAG = "WEB-HISTORY";
@@ -35,8 +36,6 @@ public class WebHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_history);
         setTitle(R.string.title_web_history);
-
-        final Context context = this;
 
         listView = (ListView) findViewById(R.id.list_history);
 
@@ -55,31 +54,43 @@ public class WebHistoryActivity extends AppCompatActivity {
             else
                 history = null;
         }
+
+        setAdapter(history);
+        listView.setOnItemClickListener(this);
+        listView.setOnItemLongClickListener(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra(MainActivity.ARG_HISTORY, historyManager);
+        startActivity(i);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long rowId) {
+        SiteEntry entry = history.get(position);
+        //historyManager.setSiteHistory(history);
+
+        Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
+        Log.i(LOG_TAG, String.format("Size of history: %d", history.size()));
+
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra(MainActivity.ARG_SITE, (Parcelable) entry);
+        i.putExtra(MainActivity.ARG_HISTORY, historyManager);
+
+        startActivity(i);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long rowId) {
+        openHistoryDialog(position);
+        return true;
+    }
+
+    private void setAdapter(ArrayList<SiteEntry> history){
         SiteListAdapter adapter = new SiteListAdapter(this, history);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                SiteEntry entry = history.get(position);
-                //historyManager.setSiteHistory(history);
-
-                Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
-                Log.i(LOG_TAG, String.format("Size of history: %d", history.size()));
-
-                Intent i = new Intent(context, MainActivity.class);
-                i.putExtra(MainActivity.ARG_SITE, (Parcelable) entry);
-                i.putExtra(MainActivity.ARG_HISTORY, historyManager);
-
-                startActivity(i);
-            }
-        });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                openHistoryDialog(position);
-                return false;
-            }
-        });
     }
 
     /**
@@ -95,23 +106,22 @@ public class WebHistoryActivity extends AppCompatActivity {
                     @Override
                     public void onClick(final DialogInterface parentDialog, int which) {
                         switch (which) {
-                            case 2:         //Delete SiteEntry
-                                DialogUtils.showConfirmationDialog(
+                            case 0:         //Delete SiteEntry
+                                DialogUtils.getConfirmationDialog(
                                         context, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface childDialog, int which) {
                                                 history.remove(position);
+                                                setAdapter(history);
 
                                                 childDialog.dismiss();
                                                 parentDialog.dismiss();
                                             }
-                                        });
+                                        }).show();
                                 break;
                         }
                     }
                 }
-        );
+        ).show();
     }
-
-    //TODO - Override onBackPressed --> Resend intent with updated manager
 }

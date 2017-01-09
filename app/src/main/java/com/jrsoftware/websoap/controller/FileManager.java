@@ -218,7 +218,6 @@ public class FileManager {
     private void writeSerializable(Serializable object, String fileName, String dir)
                                             throws IOException {
         String filePath = dir + fileName;
-        //Log.i(LOG_TAG, String.format("writeSerializable: %s", filePath));
         FileOutputStream fileStream = null;
         ObjectOutputStream output = null;
         IOException exception = null;
@@ -309,12 +308,8 @@ public class FileManager {
      * @throws IOException
      */
     private String[] readFile(String filePath, String dir) throws IOException {
-        //Log.v(LOG_TAG, "readFile");
         if(filePath == null)
             return null;
-
-        //Log.v(LOG_TAG, String.format("Reading from Directory: %s", dir));
-        //Log.v(LOG_TAG, String.format("Filepath: %s", filePath));
 
         /* Updates the Filepath with the directory */
         if(dir != null && dir.length() > 0)
@@ -365,7 +360,6 @@ public class FileManager {
     private Object readSerializable(String fileName, String dir)
                                             throws IOException, ClassNotFoundException {
         String filePath = dir + fileName;
-        //Log.i(LOG_TAG, String.format("readSerializable: %s", filePath));
 
         FileInputStream file = null;
         ObjectInputStream input = null;

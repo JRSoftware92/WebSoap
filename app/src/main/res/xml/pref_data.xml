@@ -7,4 +7,15 @@
         android:summaryOn="@string/pref_summary_remember_history_on"
         android:summaryOff="@string/pref_summary_remember_history_off"
         android:title="@string/pref_title_remember_history" />
+    <ListPreference
+        android:defaultValue="1d"
+        android:entries="@array/pref_history_time_period"
+        android:entryValues="@array/pref_history_time_period_values"
+        android:key="@string/pref_key_history_time_period"
+        android:title="@string/pref_title_history_time_period"
+        android:summary="@string/pref_description_history_time_period"/>
+    <Preference
+        android:key="@string/pref_key_clear_selected_history"
+        android:title="@string/pref_title_clear_selected_history"
+        android:summary="@string/pref_summary_clear_selected_history" />
 </PreferenceScreen>

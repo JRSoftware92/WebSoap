@@ -14,13 +14,13 @@ import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.adapter.SiteListAdapter;
 import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
-import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.model.SiteTree;
 import com.jrsoftware.websoap.util.DialogUtils;
 
 import java.util.ArrayList;
 
-public class BookmarkListActivity extends AppCompatActivity {
+public class BookmarkListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
+                                                                    AdapterView.OnItemLongClickListener {
 
     public static final String ARG_BOOKMARKS = "com.jrsoftware.websoap.bookmarks";
     public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
@@ -36,8 +36,6 @@ public class BookmarkListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bookmark_list);
         setTitle(R.string.title_bookmarks);
 
-        final Context context = this;
-
         listView = (ListView) findViewById(R.id.list_bookmarks);
 
         Intent i = getIntent();
@@ -51,27 +49,39 @@ public class BookmarkListActivity extends AppCompatActivity {
                     bookmarks = bookmarkTree.asArrayListReversed();
             }
         }
+
+        setAdapter(bookmarks);
+        listView.setOnItemClickListener(this);
+        listView.setOnItemLongClickListener(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
+        startActivity(i);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long rowId) {
+        SiteEntry entry = bookmarks.get(position);
+
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
+        i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
+
+        startActivity(i);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long rowId) {
+        openBookmarkDialog(position);
+        return true;
+    }
+
+    private void setAdapter(ArrayList<SiteEntry> list){
         SiteListAdapter adapter = new SiteListAdapter(this, bookmarks);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                SiteEntry entry = bookmarks.get(position);
-
-                Intent i = new Intent(context, MainActivity.class);
-                i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
-                i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
-
-                startActivity(i);
-            }
-        });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                openBookmarkDialog(position);
-                return false;
-            }
-        });
     }
 
     /**
@@ -86,25 +96,22 @@ public class BookmarkListActivity extends AppCompatActivity {
                     @Override
                     public void onClick(final DialogInterface parentDialog, int which) {
                         switch (which) {
-                            case 2:         //Delete SiteEntry
-                                DialogUtils.showConfirmationDialog(
+                            case 0:         //Delete SiteEntry
+                                DialogUtils.getConfirmationDialog(
                                         context, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface childDialog, int which) {
                                                 bookmarks.remove(position);
-
-                                                //FIXME - Does not save without bookmark selected
+                                                setAdapter(bookmarks);
 
                                                 childDialog.dismiss();
                                                 parentDialog.dismiss();
                                             }
-                                        });
+                                        }).show();
                                 break;
                         }
                     }
                 }
-        );
+        ).show();
     }
-
-    //TODO - Override onBackPressed --> Resend intent with updated bookmarks
 }

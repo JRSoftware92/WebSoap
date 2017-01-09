@@ -119,7 +119,7 @@ public class DialogUtils {
         return dialog.create();
     }
 
-    public static AlertDialog showConfirmationDialog(Context context, DialogInterface.OnClickListener okListener){
+    public static AlertDialog getConfirmationDialog(Context context, DialogInterface.OnClickListener okListener){
         return getConfirmationDialog(context, R.string.title_dialog_confirmation,
                 R.string.message_dialog_cannot_be_undone,
                 okListener);

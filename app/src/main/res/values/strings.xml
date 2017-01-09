@@ -110,4 +110,10 @@
     <string name="pref_description_search_engine">This setting allows bad url entries to be queried as search engine searches.</string>
     <string name="pref_title_search_engine">Search Engine</string>
     <string name="pref_key_search_engine">com.jrsoftware.websoap.settings.searchEngine</string>
+    <string name="pref_key_history_time_period">com.jrsoftware.websoap.key.historyTimePeriod</string>
+    <string name="pref_title_history_time_period">Delete recent history from</string>
+    <string name="pref_description_history_time_period">Select the date you would like to delete web history up to.</string>
+    <string name="pref_key_clear_selected_history">com.jrsoftware.websoap.key.clearHistory</string>
+    <string name="pref_title_clear_selected_history">Clear Selected History</string>
+    <string name="pref_summary_clear_selected_history">This will clear all recent web history up to the selected time period.</string>
 </resources>

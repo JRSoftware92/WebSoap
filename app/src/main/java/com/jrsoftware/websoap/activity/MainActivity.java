@@ -36,6 +36,8 @@ import java.io.IOException;
 
 /**
  * Main Entrypoint for the application
+ *
+ * //TODO - Debug Forward Stack Functionality
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -124,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
         if(loadHistory) {
             tryLoadWebHistory();
             SiteTree history = dataCenter.getSiteHistory();
-            Log.i(LOG_TAG, String.format("Loaded history: %d", history.size()));
         }
 
         //Load Site if requested
@@ -383,8 +384,6 @@ public class MainActivity extends AppCompatActivity {
                 //Saves the url in the history manager
                 if(!url.equals(dataCenter.getLastRequestedURL()));
                     dataCenter.setCurrentSite(url, title, eraseForwardStack);
-
-                Log.i(LOG_TAG, String.format("Found %d history elements.", dataCenter.getSiteHistory().size()));
 
                 trySaveWebHistory();
 

@@ -6,6 +6,7 @@ import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.model.SiteTree;
+import com.jrsoftware.websoap.util.CustomTimeUtils;
 
 import java.io.IOException;
 
@@ -93,8 +94,56 @@ public class AppDataCenter {
         return historyManager.next();
     }
 
+    public void clearHistory(String timePeriodStr) throws IOException {
+        long value;
+        switch(timePeriodStr){
+            case "1h":
+                value = CustomTimeUtils.hoursFromNow(-1);
+                break;
+            case "2h":
+                value = CustomTimeUtils.hoursFromNow(-2);
+                break;
+            case "6h":
+                value = CustomTimeUtils.hoursFromNow(-6);
+                break;
+            case "12h":
+                value = CustomTimeUtils.hoursFromNow(-12);
+                break;
+            case "1d":
+                value = CustomTimeUtils.daysFromToday(-1);
+                break;
+            case "2d":
+                value = CustomTimeUtils.daysFromToday(-2);
+                break;
+            case "1w":
+                value = CustomTimeUtils.weeksFromToday(-1);
+                break;
+            case "1m":
+                value = CustomTimeUtils.monthsFromToday(-1);
+                break;
+            case "2m":
+                value = CustomTimeUtils.monthsFromToday(-2);
+                break;
+            case "6m":
+                value = CustomTimeUtils.monthsFromToday(-6);
+                break;
+            case "1y":
+                value = CustomTimeUtils.yearsFromToday(-1);
+                break;
+            case "all-time":
+            default:
+                value = -1;
+                break;
+        }
+
+
+        //FIXME - Not Saving Cleared History
+        historyManager.clearBeforeDate(value);
+        saveHistory();
+    }
+
     public void addBookmark(String url, String title){
-        bookmarks.add(new SiteEntry(url, title, System.currentTimeMillis()));
+        bookmarks.add(new SiteEntry(url, title, CustomTimeUtils.today()));
     }
 
     public void setBookmarks(SiteTree bookmarks) {
@@ -116,8 +165,7 @@ public class AppDataCenter {
         String filePath = context.getString(R.string.file_history);
 
         //TODO - Encrypt file
-        if(history.size() > 1)
-            fileManager.writeInternalSerializable(history, filePath, null);
+        fileManager.writeInternalSerializable(history, filePath, null);
     }
 
     public void loadHistory() throws IOException, ClassNotFoundException {
@@ -134,8 +182,7 @@ public class AppDataCenter {
         String filePath = context.getString(R.string.file_bookmarks);
 
         //TODO - Encrypt File
-        if(bookmarks.size() > 0)
-            fileManager.writeInternalSerializable(bookmarks, filePath, null);
+        fileManager.writeInternalSerializable(bookmarks, filePath, null);
     }
 
     public void loadBookmarks() throws IOException, ClassNotFoundException {
