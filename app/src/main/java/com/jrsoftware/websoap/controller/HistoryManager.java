@@ -2,13 +2,9 @@ package com.jrsoftware.websoap.controller;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.jrsoftware.websoap.model.SiteEntry;
-import com.jrsoftware.websoap.model.SiteList;
-
-import java.util.Arrays;
-import java.util.Stack;
+import com.jrsoftware.websoap.model.SiteTree;
 
 /**
  * Created by jriley on 1/4/17.
@@ -19,100 +15,49 @@ import java.util.Stack;
 public class HistoryManager implements Parcelable {
     private static final String LOG_TAG = "HISTORY-MANAGER";
     private SiteEntry current;
-    private Stack<SiteEntry> prevStack, nextStack;
-    private SiteList olderHistory;
+    private SiteTree history;
 
     public HistoryManager(){
-        prevStack = new Stack<>();
-        nextStack = new Stack<>();
-        olderHistory = new SiteList();
         current = null;
+        history = new SiteTree();
     }
 
-    public HistoryManager(SiteList history){
-        prevStack = new Stack<>();
-        nextStack = new Stack<>();
-        olderHistory = history;
+    public HistoryManager(SiteTree history){
         current = null;
+        this.history = history;
     }
 
     protected HistoryManager(Parcel in) {
         current = in.readParcelable(SiteEntry.class.getClassLoader());
-        SiteEntry[] prevArr = in.createTypedArray(SiteEntry.CREATOR);
-        SiteEntry[] nextArr = in.createTypedArray(SiteEntry.CREATOR);
-        SiteEntry[] historyArr = in.createTypedArray(SiteEntry.CREATOR);
-
-        prevStack = new Stack<>();
-        nextStack = new Stack<>();
-        olderHistory = new SiteList();
-
-        Log.d(LOG_TAG, String.format("Start of List Size: %d", olderHistory.size()));
-
-        prevStack.addAll(Arrays.asList(prevArr));
-        nextStack.addAll(Arrays.asList(nextArr));
-        olderHistory.addAll(historyArr);
-
-        Log.d(LOG_TAG, "Array: ");
-        for(SiteEntry entry : historyArr) {
-            if(entry != null)
-                Log.d(LOG_TAG, String.format("Title: %s; URL: %s", entry.title(), entry.url()));
-            else
-                Log.d(LOG_TAG, "NULL ENTRY FOUND");
-        }
-
-        Log.d(LOG_TAG, String.format("History Arr Load: %d", historyArr.length));
-        Log.d(LOG_TAG, String.format("History List Load: %d", olderHistory.size()));
-        Log.d(LOG_TAG, String.format("Are they equal? %s", olderHistory.size() == historyArr.length ? "Yes" : "No"));
+        history = in.readParcelable(SiteTree.class.getClassLoader());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        SiteEntry[] prevArr = new SiteEntry[prevStack.size()];
-        SiteEntry[] nextArr = new SiteEntry[nextStack.size()];
-
-        int i = 0;
-        while(!prevStack.isEmpty())
-            prevArr[i++] = prevStack.pop();
-
-        i = 0;
-        while(!nextStack.isEmpty())
-            nextArr[i++] = nextStack.pop();
-
-        int length = olderHistory.size();
-        SiteEntry[] historyArr = new SiteEntry[length];
-        for(i = 0; i < length; i++)
-            historyArr[i] = olderHistory.get(i);
-
         dest.writeParcelable(current, flags);
-        dest.writeTypedArray(prevArr, flags);
-        dest.writeTypedArray(nextArr, flags);
-        dest.writeTypedArray(historyArr, flags);
-
-        Log.d(LOG_TAG, String.format("History Arr Write: %d", historyArr.length));
-        Log.d(LOG_TAG, String.format("History List Write: %d", olderHistory.size()));
+        dest.writeParcelable(history, flags);
     }
 
-    public SiteList getSiteHistory(){ return olderHistory; }
+    public SiteEntry getCurrent(){ return current; }
 
-    public void setSiteHistory(SiteList list){
-        if(olderHistory == null || olderHistory.size() < 1)
-            olderHistory = list;
+    public SiteEntry[] getHistory(){ return history.asArray(); }
+
+    public SiteTree getHistoryTree(){ return history; }
+
+    public void setSiteHistory(SiteTree tree){
+        if(history == null || history.size() < 1)
+            history = tree;
         else
-            olderHistory.addAll(list);
+            history.addAll(tree);
     }
 
     public void addHistoryEntry(SiteEntry entry){
-        olderHistory.add(entry);
+        history.add(entry);
     }
 
     public void updateSiteHistory(String url, String title){
-        olderHistory.add(new SiteEntry(url, title));
+        history.add(new SiteEntry(url, title, System.currentTimeMillis()));
     }
-
-    public SiteEntry getLastRequestedURL(){
-        return current;
-    }
-
     /**
      * Pushes the previous current entry onto the previous stack
      * @param newUrl - String url of the current page
@@ -121,42 +66,33 @@ public class HistoryManager implements Parcelable {
         if(newUrl == null)
             return;
 
-        if(current != null && !newUrl.equals(current.url()))
-            prevStack.add(current);
-
-        current = new SiteEntry(newUrl, title);
-        if(!nextStack.isEmpty() && eraseForwardStack)
-            nextStack.clear();
+        current = new SiteEntry(newUrl, title, System.currentTimeMillis());
+        if(eraseForwardStack)
+            clearForwardStack();
 
         addHistoryEntry(current);
     }
 
+    public void clearForwardStack(){
+        history.removeTail(current.rawDateCreated(), false);
+    }
+
     public SiteEntry back(){
-        //Returns the current url if the stack is empty
-        if(prevStack.isEmpty()) {
+        SiteEntry back = history.lower(current);
+        if(back == null)
             return current;
-        }
 
-        //Push the current page onto the next stack
-        if(current != null)
-            nextStack.add(current);
-
-        current = prevStack.pop();
+        current = back;
         addHistoryEntry(current);
         return current;
     }
 
     public SiteEntry next(){
-        //Returns the current url if the stack is empty
-        if(nextStack.isEmpty()) {
+        SiteEntry next = history.higher(current);
+        if(next == null)
             return current;
-        }
 
-        //Push the current page onto the previous stack
-        if(current != null)
-            prevStack.add(current);
-
-        current = nextStack.pop();
+        current = next;
         addHistoryEntry(current);
         return current;
     }

@@ -14,6 +14,7 @@ import java.util.HashMap;
  * Parcelable Array List of SiteEntry objects
  */
 
+@Deprecated
 public class SiteList implements Parcelable, Serializable {
 
     private ArrayList<SiteEntry> entries;

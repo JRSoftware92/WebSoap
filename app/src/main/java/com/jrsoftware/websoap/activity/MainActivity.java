@@ -25,7 +25,7 @@ import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.controller.AppDataCenter;
 import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
-import com.jrsoftware.websoap.model.SiteList;
+import com.jrsoftware.websoap.model.SiteTree;
 import com.jrsoftware.websoap.services.HTMLSanitizationService;
 import com.jrsoftware.websoap.settings.SettingsActivity;
 import com.jrsoftware.websoap.util.AppUtils;
@@ -36,8 +36,6 @@ import java.io.IOException;
 
 /**
  * Main Entrypoint for the application
- *
- * FIXME - History won't serialize properly (Loses entry on history selection, appears to be the first element)
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -92,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             if(extras != null){
                 site = intent.getParcelableExtra(ARG_SITE);
                 if(intent.hasExtra(ARG_BOOKMARKS)){
-                    SiteList bookmarks = intent.getParcelableExtra(ARG_BOOKMARKS);
+                    SiteTree bookmarks = intent.getParcelableExtra(ARG_BOOKMARKS);
                     HistoryManager history = intent.getParcelableExtra(ARG_HISTORY);
                     dataCenter.setBookmarks(bookmarks);
                     dataCenter.setSiteHistoryManager(history);
@@ -105,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     dataCenter.setSiteHistoryManager(history);
                     loadHistory = false;
 
-                    Log.i(LOG_TAG, String.format("Parceled history: %d", history.getSiteHistory().size()));
+                    Log.i(LOG_TAG, String.format("Parceled history: %d", history.getHistoryTree().size()));
 
                     trySaveWebHistory();
                 }
@@ -125,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         //Load Web History if necessary
         if(loadHistory) {
             tryLoadWebHistory();
-            SiteList history = dataCenter.getSiteHistory();
+            SiteTree history = dataCenter.getSiteHistory();
             Log.i(LOG_TAG, String.format("Loaded history: %d", history.size()));
         }
 
@@ -191,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                     AppUtils.showToastLong(this, "Unable to bookmark site due to unexpected error.");
                 return true;
             case R.id.action_bookmarks:
-                SiteList bookmarks = dataCenter.getBookmarks();
+                SiteTree bookmarks = dataCenter.getBookmarks();
                 intent = new Intent(this, BookmarkListActivity.class);
                 intent.putExtra(BookmarkListActivity.ARG_BOOKMARKS, (Parcelable)bookmarks);
                 intent.putExtra(BookmarkListActivity.ARG_HISTORY, dataCenter.getHistoryManager());
@@ -385,6 +383,8 @@ public class MainActivity extends AppCompatActivity {
                 //Saves the url in the history manager
                 if(!url.equals(dataCenter.getLastRequestedURL()));
                     dataCenter.setCurrentSite(url, title, eraseForwardStack);
+
+                Log.i(LOG_TAG, String.format("Found %d history elements.", dataCenter.getSiteHistory().size()));
 
                 trySaveWebHistory();
 

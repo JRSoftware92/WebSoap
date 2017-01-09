@@ -15,7 +15,10 @@ import com.jrsoftware.websoap.adapter.SiteListAdapter;
 import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
+import com.jrsoftware.websoap.model.SiteTree;
 import com.jrsoftware.websoap.util.DialogUtils;
+
+import java.util.ArrayList;
 
 public class BookmarkListActivity extends AppCompatActivity {
 
@@ -24,7 +27,7 @@ public class BookmarkListActivity extends AppCompatActivity {
 
     ListView listView;
 
-    private SiteList bookmarks;
+    private ArrayList<SiteEntry> bookmarks;
     private HistoryManager historyManager;
 
     @Override
@@ -41,8 +44,11 @@ public class BookmarkListActivity extends AppCompatActivity {
         if(i != null){
             Bundle extras = i.getExtras();
             if(extras != null) {
-                bookmarks = extras.getParcelable(ARG_BOOKMARKS);
+                SiteTree bookmarkTree = extras.getParcelable(ARG_BOOKMARKS);
                 historyManager = extras.getParcelable(ARG_HISTORY);
+
+                if(bookmarkTree != null)
+                    bookmarks = bookmarkTree.asArrayListReversed();
             }
         }
         SiteListAdapter adapter = new SiteListAdapter(this, bookmarks);
@@ -54,7 +60,7 @@ public class BookmarkListActivity extends AppCompatActivity {
 
                 Intent i = new Intent(context, MainActivity.class);
                 i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
-                i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable)bookmarks);
+                i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
 
                 startActivity(i);
             }

@@ -15,10 +15,10 @@ import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.adapter.SiteListAdapter;
 import com.jrsoftware.websoap.controller.HistoryManager;
 import com.jrsoftware.websoap.model.SiteEntry;
-import com.jrsoftware.websoap.model.SiteList;
+import com.jrsoftware.websoap.model.SiteTree;
 import com.jrsoftware.websoap.util.DialogUtils;
 
-import java.util.Collections;
+import java.util.ArrayList;
 
 public class WebHistoryActivity extends AppCompatActivity {
 
@@ -27,7 +27,7 @@ public class WebHistoryActivity extends AppCompatActivity {
 
     ListView listView;
 
-    private SiteList history;
+    private ArrayList<SiteEntry> history;
     private HistoryManager historyManager;
 
     @Override
@@ -41,16 +41,19 @@ public class WebHistoryActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.list_history);
 
         Intent i = getIntent();
-        if(i != null){
+        if (i != null) {
             Bundle extras = i.getExtras();
-            if(extras != null)
+            if (extras != null)
                 historyManager = extras.getParcelable(ARG_HISTORY);
 
-            if(historyManager != null)
-                history = historyManager.getSiteHistory();
+            SiteTree tree = null;
+            if (historyManager != null)
+                tree = historyManager.getHistoryTree();
 
-            if(history != null)
-                history.reverse();
+            if (tree != null)
+                history = tree.asArrayListReversed();
+            else
+                history = null;
         }
         SiteListAdapter adapter = new SiteListAdapter(this, history);
         listView.setAdapter(adapter);
@@ -58,14 +61,13 @@ public class WebHistoryActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SiteEntry entry = history.get(position);
-                history.reverse();
-                historyManager.setSiteHistory(history);
+                //historyManager.setSiteHistory(history);
 
                 Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
                 Log.i(LOG_TAG, String.format("Size of history: %d", history.size()));
 
                 Intent i = new Intent(context, MainActivity.class);
-                i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
+                i.putExtra(MainActivity.ARG_SITE, (Parcelable) entry);
                 i.putExtra(MainActivity.ARG_HISTORY, historyManager);
 
                 startActivity(i);
@@ -82,9 +84,10 @@ public class WebHistoryActivity extends AppCompatActivity {
 
     /**
      * Opens the options dialog for long clicking a SiteEntry object
+     *
      * @param position - index of the object in question
      */
-    void openHistoryDialog(final int position){
+    void openHistoryDialog(final int position) {
         final Context context = this;
         DialogUtils.getTextChoiceDialog(this,
                 R.array.array_history_options, R.string.title_web_history,

@@ -5,6 +5,7 @@ import android.content.Context;
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
+import com.jrsoftware.websoap.model.SiteTree;
 
 import java.io.IOException;
 
@@ -17,13 +18,13 @@ import java.io.IOException;
 public class AppDataCenter {
     private Context context;
 
-    private SiteList bookmarks;
+    private SiteTree bookmarks;
     private HistoryManager historyManager;
     private FileManager fileManager;
 
     public AppDataCenter(Context context){
         this.context = context;
-        bookmarks = new SiteList();
+        bookmarks = new SiteTree();
         historyManager = new HistoryManager();
         fileManager = new FileManager(context);
     }
@@ -33,7 +34,7 @@ public class AppDataCenter {
     public void setContext(Context context){ this.context = context; }
 
     public String getLastRequestedURL(){
-        SiteEntry site = historyManager.getLastRequestedURL();
+        SiteEntry site = historyManager.getCurrent();
         if(site == null)
             return null;
         else
@@ -41,14 +42,14 @@ public class AppDataCenter {
     }
 
     public SiteEntry getLastRequestedSite(){
-        return historyManager.getLastRequestedURL();
+        return historyManager.getCurrent();
     }
 
-    public SiteList getBookmarks(){
+    public SiteTree getBookmarks(){
         return bookmarks;
     }
 
-    public SiteList getSiteHistory(){ return historyManager.getSiteHistory(); }
+    public SiteTree getSiteHistory(){ return historyManager.getHistoryTree(); }
 
     public HistoryManager getHistoryManager() { return historyManager; }
 
@@ -56,7 +57,7 @@ public class AppDataCenter {
         historyManager.setCurrent(url, title, eraseForwardStack);
     }
 
-    public void setSiteHistory(SiteList siteHistory) {
+    public void setSiteHistory(SiteTree siteHistory) {
         historyManager.setSiteHistory(siteHistory);
     }
 
@@ -92,27 +93,11 @@ public class AppDataCenter {
         return historyManager.next();
     }
 
-    public SiteEntry getBookmark(int index){
-        if(index < 0 || bookmarks.size() <= index)
-            return null;
-        return bookmarks.get(index);
-    }
-
     public void addBookmark(String url, String title){
-        bookmarks.add(new SiteEntry(url, title));
+        bookmarks.add(new SiteEntry(url, title, System.currentTimeMillis()));
     }
 
-    public void addBookmark(int index, String url, String title){
-        bookmarks.add(index, new SiteEntry(url, title));
-    }
-
-    public void removeBookmark(int index){
-        if(index < 0 || bookmarks.size() <= index)
-            return;
-        bookmarks.remove(index);
-    }
-
-    public void setBookmarks(SiteList bookmarks) {
+    public void setBookmarks(SiteTree bookmarks) {
         this.bookmarks = bookmarks;
     }
 
@@ -127,7 +112,7 @@ public class AppDataCenter {
     }
 
     public void saveHistory() throws IOException {
-        SiteList history = historyManager.getSiteHistory();
+        SiteTree history = historyManager.getHistoryTree();
         String filePath = context.getString(R.string.file_history);
 
         //TODO - Encrypt file
@@ -137,7 +122,7 @@ public class AppDataCenter {
 
     public void loadHistory() throws IOException, ClassNotFoundException {
         String filePath = context.getString(R.string.file_history);
-        SiteList history = (SiteList) fileManager.readInternalSerializable(filePath, null);
+        SiteTree history = (SiteTree) fileManager.readInternalSerializable(filePath, null);
 
         if(historyManager == null)
             historyManager = new HistoryManager(history);
@@ -155,7 +140,7 @@ public class AppDataCenter {
 
     public void loadBookmarks() throws IOException, ClassNotFoundException {
         String filePath = context.getString(R.string.file_bookmarks);
-        bookmarks = (SiteList) fileManager.readInternalSerializable(filePath, null);
+        bookmarks = (SiteTree) fileManager.readInternalSerializable(filePath, null);
     }
 }
 

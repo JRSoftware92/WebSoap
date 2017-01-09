@@ -11,22 +11,26 @@ import java.io.Serializable;
  * Parcelable model class for a site entry
  */
 
-public class SiteEntry implements Parcelable, Serializable {
+public class SiteEntry implements Comparable<SiteEntry>, Parcelable, Serializable {
 
+    private long dateCreated;
     private String title, url;
 
-    public SiteEntry(String url, String title){
+    public SiteEntry(String url, String title, long dateCreated){
         this.url = url;
         this.title = title;
+        this.dateCreated = dateCreated;
     }
 
     protected SiteEntry(Parcel in) {
+        dateCreated = in.readLong();
         title = in.readString();
         url = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(dateCreated);
         dest.writeString(title);
         dest.writeString(url);
     }
@@ -34,6 +38,8 @@ public class SiteEntry implements Parcelable, Serializable {
     public String title(){ return title; }
 
     public String url(){ return url; }
+
+    public long rawDateCreated(){ return dateCreated; }
 
     @Override
     public int describeContents() {
@@ -54,13 +60,9 @@ public class SiteEntry implements Parcelable, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if(o == null)
-            return false;
         if(!(o instanceof SiteEntry))
             return false;
-
-        SiteEntry obj = (SiteEntry) o;
-        return obj.url.equals(this.url);
+        return compareTo((SiteEntry)o) == 0;
     }
 
     @Override
@@ -69,5 +71,18 @@ public class SiteEntry implements Parcelable, Serializable {
                 "Entry: { title='%s'; url ='%s'; };",
                 title, url
         );
+    }
+
+    @Override
+    public int compareTo(SiteEntry another) {
+        if(another == null)
+            return -1;
+
+        if(another.dateCreated > this.dateCreated)
+            return -1;
+        else if(another.dateCreated < this.dateCreated)
+            return 1;
+        else
+            return 0;
     }
 }

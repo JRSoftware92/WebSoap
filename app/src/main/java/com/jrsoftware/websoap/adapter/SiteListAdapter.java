@@ -12,37 +12,39 @@ import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.model.SiteList;
 import com.jrsoftware.websoap.util.AppUtils;
 
+import java.util.ArrayList;
+
 /**
  * Created by jriley on 1/26/16.
  * ListView adapter for Site Entries
  */
 public class SiteListAdapter extends ArrayAdapter<SiteEntry> {
 
-    private SiteList bookmarks;
+    private ArrayList<SiteEntry> entries;
 
     public SiteListAdapter(Context context){
         super(context, R.layout.list_item_bookmark);
     }
 
-    public SiteListAdapter(Context context, SiteList bookmarks){
+    public SiteListAdapter(Context context, ArrayList<SiteEntry> entries){
         this(context);
-        this.bookmarks = bookmarks;
+        this.entries = entries;
     }
 
     @Override
     public int getCount() {
-        if(bookmarks == null)
+        if(entries == null)
             return 0;
         else
-            return bookmarks.size();
+            return entries.size();
     }
 
     @Override
     public SiteEntry getItem(int position) {
-        if(bookmarks == null || bookmarks.size() < 1 || bookmarks.size() <= position)
+        if(entries == null || entries.size() < 1 || entries.size() <= position)
             return null;
         else
-            return bookmarks.get(position);
+            return entries.get(position);
     }
 
     @Override
