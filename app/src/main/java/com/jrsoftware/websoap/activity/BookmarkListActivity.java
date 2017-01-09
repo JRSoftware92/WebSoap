@@ -22,6 +22,7 @@ import java.util.ArrayList;
 public class BookmarkListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
                                                                     AdapterView.OnItemLongClickListener {
 
+    public static final String ARG_SITE = "com.jrsoftware.websoap.site";
     public static final String ARG_BOOKMARKS = "com.jrsoftware.websoap.bookmarks";
     public static final String ARG_HISTORY = "com.jrsoftware.websoap.history";
 
@@ -59,6 +60,7 @@ public class BookmarkListActivity extends AppCompatActivity implements AdapterVi
     public void onBackPressed() {
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
+        i.putExtra(MainActivity.ARG_HISTORY, historyManager);
         startActivity(i);
     }
 
@@ -67,7 +69,8 @@ public class BookmarkListActivity extends AppCompatActivity implements AdapterVi
         SiteEntry entry = bookmarks.get(position);
 
         Intent i = new Intent(this, MainActivity.class);
-        i.putExtra(MainActivity.ARG_SITE, (Parcelable)entry);
+        i.putExtra(MainActivity.ARG_HISTORY, historyManager);
+        i.putExtra(MainActivity.ARG_SITE, (Parcelable) entry);
         i.putExtra(MainActivity.ARG_BOOKMARKS, (Parcelable) new SiteTree(bookmarks));
 
         startActivity(i);

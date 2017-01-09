@@ -37,7 +37,8 @@ import java.io.IOException;
 /**
  * Main Entrypoint for the application
  *
- * //TODO - Debug Forward Stack Functionality
+ * TODO - Debug Forward Stack Functionality
+ * 1
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     private AppDataCenter dataCenter;
 
-    private boolean eraseForwardStack;
+    private boolean bAddHistoryEntry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,9 @@ public class MainActivity extends AppCompatActivity {
                     dataCenter.setSiteHistoryManager(history);
                     loadBookmarks = false;
 
+                    if(site == null)
+                        site = dataCenter.getLastRequestedSite();
+
                     trySaveBookmarks();
                 }
                 if(intent.hasExtra(ARG_HISTORY)){
@@ -105,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
                     dataCenter.setSiteHistoryManager(history);
                     loadHistory = false;
 
-                    Log.i(LOG_TAG, String.format("Parceled history: %d", history.getHistoryTree().size()));
+                    if(site == null)
+                        site = dataCenter.getLastRequestedSite();
 
                     trySaveWebHistory();
                 }
@@ -123,10 +128,8 @@ public class MainActivity extends AppCompatActivity {
             tryLoadBookmarks();
 
         //Load Web History if necessary
-        if(loadHistory) {
+        if(loadHistory)
             tryLoadWebHistory();
-            SiteTree history = dataCenter.getSiteHistory();
-        }
 
         //Load Site if requested
         if(site != null){
@@ -134,13 +137,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        //Load Homepage
-        SharedPreferences preferences = AppUtils.getPreferences(this);
-        String homePage = preferences.getString(
-                getString(R.string.pref_key_home_page),
-                getString(R.string.pref_default_home_page)
-        );
-        sendSearchRequest(homePage, true);
+        loadHomepage();
     }
 
     @Override
@@ -174,13 +171,7 @@ public class MainActivity extends AppCompatActivity {
                     AppUtils.showToastLong(this, "Unable to send refresh request due to unexpected error.");
                 return true;
             case R.id.action_home:
-                //Load Homepage
-                SharedPreferences preferences = AppUtils.getPreferences(this);
-                String homePage = preferences.getString(
-                        getString(R.string.pref_key_home_page),
-                        getString(R.string.pref_default_home_page)
-                );
-                sendSearchRequest(homePage, true);
+                loadHomepage();
                 return true;
             case R.id.action_bookmark:
                 entry = dataCenter.getLastRequestedSite();
@@ -200,17 +191,28 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_history:
                 intent = new Intent(this, WebHistoryActivity.class);
                 intent.putExtra(BookmarkListActivity.ARG_HISTORY, dataCenter.getHistoryManager());
-
                 startActivity(intent);
                 return true;
             case R.id.action_settings:
+                entry = dataCenter.getLastRequestedSite();
                 intent = new Intent(this, SettingsActivity.class);
+                intent.putExtra(SettingsActivity.ARG_SITE, (Parcelable) entry);
                 startActivity(intent);
                 return true;
             default:
                 //pass the event to parent
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void loadHomepage(){
+        //Load Homepage
+        SharedPreferences preferences = AppUtils.getPreferences(this);
+        String homePage = preferences.getString(
+                getString(R.string.pref_key_home_page),
+                getString(R.string.pref_default_home_page)
+        );
+        sendSearchRequest(homePage, true);
     }
 
     private void showNewBookmarkDialog(final SiteEntry entry) {
@@ -243,12 +245,12 @@ public class MainActivity extends AppCompatActivity {
      * Submits an html request to the HTML Sanitization Service
      * @param url - String url to be loaded
      */
-    protected void sendSearchRequest(String url, boolean eraseForwardStack){
+    protected void sendSearchRequest(String url, boolean bAddHistoryEntry){
         //Validates Search Request
         if(url == null || url.length() < 1)
             return;
 
-        this.eraseForwardStack = eraseForwardStack;
+        this.bAddHistoryEntry = bAddHistoryEntry;
 
         //Display Loading Dialog while search results are being sent
         loadingDialog.show();
@@ -358,7 +360,6 @@ public class MainActivity extends AppCompatActivity {
                 switch(resultCode){
                     case HTMLSanitizationService.EVENT_REQUEST_SUCCESSFUL:
                         title = resultBundle.getString(HTMLSanitizationService.RESULT_TITLE);
-                        dataCenter.updateSiteTitle(url, title);
                         setTitle(AppUtils.concatWithEllipsis(title, 24));
                         break;
                     case HTMLSanitizationService.EVENT_RESPONSE_BAD:
@@ -383,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
                 searchView.setQuery(url, false);
                 //Saves the url in the history manager
                 if(!url.equals(dataCenter.getLastRequestedURL()));
-                    dataCenter.setCurrentSite(url, title, eraseForwardStack);
+                    dataCenter.setCurrentSite(url, title, bAddHistoryEntry);
 
                 trySaveWebHistory();
 

@@ -2,7 +2,6 @@ package com.jrsoftware.websoap.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,7 +59,6 @@ public class SiteTree implements Parcelable, Serializable {
 
     public boolean add(SiteEntry entry){
         if(urlMap.containsKey(entry.url())) {
-            Log.i("SITE-TREE-ADD", "Removing Old Entry");
             Long date = urlMap.get(entry.url());
             remove(date);
         }
@@ -139,32 +137,16 @@ public class SiteTree implements Parcelable, Serializable {
         return entries.last();
     }
 
-    public SiteEntry lower(long maxDate){
-        return lower(new SiteEntry(null, null, maxDate));
-    }
-
     public SiteEntry lower(SiteEntry exclusiveBound){
         return entries.lower(exclusiveBound);
-    }
-
-    public SiteEntry floor(long maxDate){
-        return floor(new SiteEntry(null, null, maxDate));
     }
 
     public SiteEntry floor(SiteEntry inclusiveBound){
         return entries.floor(inclusiveBound);
     }
 
-    public SiteEntry higher(long minDate){
-        return higher(new SiteEntry(null, null, minDate));
-    }
-
     public SiteEntry higher(SiteEntry exclusiveBound){
         return entries.higher(exclusiveBound);
-    }
-
-    public SiteEntry ceiling(long minDate){
-        return ceiling(new SiteEntry(null, null, minDate));
     }
 
     public SiteEntry ceiling(SiteEntry inclusiveBound){
@@ -175,10 +157,6 @@ public class SiteTree implements Parcelable, Serializable {
                            boolean latestInclusive){
         SortedSet<SiteEntry> sortedSet = entries.subSet(earliestEntry, earliestInclusive, latestEntry, latestInclusive);
         return new SiteTree(sortedSet);
-    }
-
-    public SiteTree headSet(long latestDate, boolean inclusive){
-        return headSet(new SiteEntry(null, null, latestDate), inclusive);
     }
 
     public SiteTree headSet(SiteEntry latestEntry, boolean inclusive){

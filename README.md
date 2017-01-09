@@ -2,7 +2,7 @@
 
 ## Description
 
-Simple Android Web Browsing Application built on the jsoup HTML Parsing Library.
+A functional HTML Web Viewing Application for the Android platform built on the jsoup HTML Parsing Library.
 
 ### Features
 

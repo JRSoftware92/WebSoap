@@ -66,10 +66,6 @@ public class AppDataCenter {
         this.historyManager = historyManager;
     }
 
-    public void updateSiteTitle(String url, String title){
-        historyManager.updateSiteHistory(url, title);
-    }
-
     public String backURL(){
         SiteEntry site = historyManager.back();
         if(site == null)

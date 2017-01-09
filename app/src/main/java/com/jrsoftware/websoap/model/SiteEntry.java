@@ -78,6 +78,10 @@ public class SiteEntry implements Comparable<SiteEntry>, Parcelable, Serializabl
         if(another == null)
             return -1;
 
+        //FIXME - REMOVE IF BUGS INTRODUCED
+        if(another.url().equals(this.url()))
+            return 0;
+
         if(another.dateCreated > this.dateCreated)
             return -1;
         else if(another.dateCreated < this.dateCreated)

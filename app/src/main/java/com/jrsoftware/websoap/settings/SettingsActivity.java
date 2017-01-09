@@ -5,16 +5,17 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
 import com.jrsoftware.websoap.R;
 import com.jrsoftware.websoap.activity.MainActivity;
+import com.jrsoftware.websoap.model.SiteEntry;
 import com.jrsoftware.websoap.util.AppUtils;
 
 import java.util.List;
@@ -25,10 +26,21 @@ import java.util.List;
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements CustomPreferenceFragment.PreferenceUpdateListener {
 
+    public static final String ARG_SITE = "com.jrsoftware.websoap.site";
+
+    private SiteEntry site;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+        Intent i = getIntent();
+        if(i != null){
+            Bundle extras = i.getExtras();
+            if(extras != null)
+                site = (SiteEntry) extras.get(ARG_SITE);
+        }
     }
 
     @Override
@@ -62,8 +74,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
     @Override
     public void onBackPressed() {
-        Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
+        FragmentManager fragmentManager = getFragmentManager();
+        if(fragmentManager.getBackStackEntryCount() < 1) {
+            Intent i = new Intent(this, MainActivity.class);
+            i.putExtra(MainActivity.ARG_SITE, (Parcelable) site);
+            startActivity(i);
+        }
+        else{
+            super.onBackPressed();
+        }
     }
 
     @Override

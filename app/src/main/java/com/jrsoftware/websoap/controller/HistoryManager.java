@@ -12,6 +12,8 @@ import com.jrsoftware.websoap.util.CustomTimeUtils;
  * Created by jriley on 1/4/17.
  *
  * Data Management Class for managing url history
+ *
+ * TODO - next() gets stuck on first/last elements. Back doesn't seem to.
  */
 
 public class HistoryManager implements Parcelable {
@@ -53,26 +55,17 @@ public class HistoryManager implements Parcelable {
             history.addAll(tree);
     }
 
-    public void addHistoryEntry(SiteEntry entry){
-        history.add(entry);
-    }
-
-    public void updateSiteHistory(String url, String title){
-        history.add(new SiteEntry(url, title, CustomTimeUtils.today()));
-    }
     /**
      * Pushes the previous current entry onto the previous stack
      * @param newUrl - String url of the current page
      */
-    public void setCurrent(String newUrl, String title, boolean eraseForwardStack){
+    public void setCurrent(String newUrl, String title, boolean addHistoryEntry){
         if(newUrl == null)
             return;
 
         current = new SiteEntry(newUrl, title, CustomTimeUtils.today());
-        if(eraseForwardStack)
-            clearForwardStack();
-
-        addHistoryEntry(current);
+        if(addHistoryEntry)
+            history.add(current);
     }
 
     public void clearBeforeDate(long date){
@@ -96,21 +89,29 @@ public class HistoryManager implements Parcelable {
 
     public SiteEntry back(){
         SiteEntry back = history.lower(current);
-        if(back == null)
+        if(back == null) {
+            Log.i(LOG_TAG, "back: null");
             return current;
+        }
+        else{
+            Log.i(LOG_TAG, String.format("back: %s", back.title()));
+        }
 
         current = back;
-        addHistoryEntry(current);
         return current;
     }
 
     public SiteEntry next(){
         SiteEntry next = history.higher(current);
-        if(next == null)
+        if(next == null) {
+            Log.i(LOG_TAG, "next: null");
             return current;
+        }
+        else{
+            Log.i(LOG_TAG, String.format("next: %s", next.title()));
+        }
 
         current = next;
-        addHistoryEntry(current);
         return current;
     }
 

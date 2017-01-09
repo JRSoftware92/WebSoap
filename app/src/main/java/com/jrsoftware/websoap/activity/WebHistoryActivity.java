@@ -70,10 +70,6 @@ public class WebHistoryActivity extends AppCompatActivity implements AdapterView
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long rowId) {
         SiteEntry entry = history.get(position);
-        //historyManager.setSiteHistory(history);
-
-        Log.v(LOG_TAG, String.format("Chosen Entry: %s", entry.title()));
-        Log.i(LOG_TAG, String.format("Size of history: %d", history.size()));
 
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra(MainActivity.ARG_SITE, (Parcelable) entry);
